@@ -20,8 +20,13 @@ val mihomoAbis = mapOf(
 )
 val mihomoDir = layout.projectDirectory.dir("mihomo-bin/$mihomoVersion")
 
-// Своя нумерация KKMProxy; versionCode не понижаем, иначе обновление поверх не встанет
-val appVersionName = "1.0.0"
+// Для нового релиза достаточно поменять эту строку и поставить тег такой же версии
+val appVersionName = "1.0.1"
+
+// Номер сборки считается из версии: 1.0.1 -> 10001. Он должен только расти,
+// иначе Android не даст поставить обновление поверх установленного.
+val appVersionCode = appVersionName.split('.').map { it.toIntOrNull() ?: 0 }
+    .let { (it.getOrElse(0) { 0 } * 10000) + (it.getOrElse(1) { 0 } * 100) + it.getOrElse(2) { 0 } }
 
 // Версия оригинального tg-ws-proxy, с которого сделан Kotlin-порт TgWsProxy
 val tgwsPortedFrom = "v1.10.2"
@@ -57,7 +62,7 @@ android {
         minSdk = 23
         //noinspection OldTargetApi
         targetSdk = 34
-        versionCode = 1780
+        versionCode = appVersionCode
         versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

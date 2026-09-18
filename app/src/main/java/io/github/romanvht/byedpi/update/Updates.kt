@@ -32,10 +32,13 @@ object Updates {
     private const val PREF_LAST_CHECK = "update_last_check"
     private const val PREF_LAST_SEEN = "update_last_seen_tag"
 
-    /** Репозиторий, куда выкладываются сборки KKMProxy (настраивается в приложении) */
-    fun repo(context: Context): String =
-        context.getPreferences().getString(PREF_REPO, "")?.trim().orEmpty()
+    /** Репозиторий с релизами KKMProxy; в приложении его можно заменить своим */
+    const val DEFAULT_REPO = "kukmber/KKMProxy"
 
+    fun repo(context: Context): String =
+        context.getPreferences().getString(PREF_REPO, null)?.trim()?.ifBlank { null } ?: DEFAULT_REPO
+
+    /** Пустая строка возвращает репозиторий по умолчанию */
     fun setRepo(context: Context, repo: String) {
         context.getPreferences().edit { putString(PREF_REPO, repo.trim().trim('/')) }
     }
