@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/view_topbar" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
+
+            <ImageView
+                style="@style/Dash.RowIcon"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/ic_k_search" />
+
+            <EditText
+                android:id="@+id/logFilter"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:fontFamily="monospace"
+                android:hint="@string/logs_filter_hint"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:textColor="@color/text"
+                android:textColorHint="@color/muted"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/logAutoscroll"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_proto_chip"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="@string/logs_autoscroll"
+            android:textColor="@color/tab_text"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_card">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/logScroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fadeScrollbars="true"
+            android:scrollbarStyle="insideOverlay"
+            android:scrollbars="vertical">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+
+                <TextView
+                    android:id="@+id/logText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:lineSpacingMultiplier="1.15"
+                    android:padding="12dp"
+                    android:textColor="@color/text"
+                    android:textIsSelectable="true"
+                    android:textSize="10.5sp" />
+            </HorizontalScrollView>
+        </androidx.core.widget.NestedScrollView>
+
+        <TextView
+            android:id="@+id/logEmpty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawablePadding="10dp"
+            android:gravity="center"
+            android:text="@string/logs_empty"
+            android:textColor="@color/muted"
+            android:textSize="13sp"
+            android:visibility="gone"
+            app:drawableTint="@color/line"
+            app:drawableTopCompat="@drawable/ic_k_logs" />
+
+        <ImageView
+            android:id="@+id/logToBottom"
+            style="@style/Dash.IconButton"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="10dp"
+            android:contentDescription="@string/logs_autoscroll"
+            android:src="@drawable/ic_k_down"
+            android:visibility="gone" />
+    </FrameLayout>
+</LinearLayout>

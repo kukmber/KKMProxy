@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/topBar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="18dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="18dp"
+    android:paddingBottom="10dp">
+
+    <ImageView
+        android:id="@+id/topBack"
+        style="@style/Dash.IconButton"
+        android:layout_marginStart="0dp"
+        android:contentDescription="@android:string/cancel"
+        android:src="@drawable/ic_k_back"
+        app:tint="@color/text" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/topTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:letterSpacing="-0.015"
+            android:maxLines="1"
+            android:textColor="@color/text"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            tools:text="Логи VPN" />
+
+        <TextView
+            android:id="@+id/topSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="monospace"
+            android:maxLines="1"
+            android:textColor="@color/muted"
+            android:textSize="11sp"
+            android:visibility="gone"
+            tools:text="120 строк"
+            tools:visibility="visible" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/topActions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" />
+</LinearLayout>

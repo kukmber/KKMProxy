@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Legacy colors -->
     <color name="icon_color">#0B4680</color>
     <color name="green_active">#4CAF50</color>
+    
+    <!-- Dark theme palette from HTML mockup -->
+    <color name="bg">#0B0E12</color>
+    <color name="panel">#12161C</color>
+    <color name="panel_2">#171C24</color>
+    <color name="line">#232A34</color>
+    <color name="text">#E7ECF2</color>
+    <color name="muted">#7C8797</color>
+    <color name="accent">#3DDC97</color>
+    <color name="accent_dim">#1F5B44</color>
+    <color name="accent2">#5B8CFF</color>
+    <color name="warn">#F0A93A</color>
+    <color name="danger">#E5534B</color>
+    
+    <!-- Accent with alpha -->
+    <color name="accent_12">#1F3DDC97</color>
+    <color name="accent_35">#593DDC97</color>
+    <color name="danger_12">#1FE5534B</color>
+    <color name="danger_30">#4DE5534B</color>
 </resources>

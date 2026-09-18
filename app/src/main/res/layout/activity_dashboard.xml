@@ -1,0 +1,1059 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical">
+
+    <!-- ===================== Top bar ===================== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="18dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:id="@+id/profilePill"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_weight="1"
+            android:gravity="start">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_profile_pill"
+                android:duplicateParentState="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="7dp"
+                android:paddingTop="7dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="7dp">
+
+                <TextView
+                    android:id="@+id/profileAvatar"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:background="@drawable/bg_avatar_gradient"
+                    android:gravity="center"
+                    android:textColor="@color/bg"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    tools:text="K" />
+
+                <TextView
+                    android:id="@+id/profileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:ellipsize="end"
+                    android:fontFamily="monospace"
+                    android:maxWidth="180dp"
+                    android:maxLines="1"
+                    android:textColor="@color/text"
+                    android:textSize="12.5sp"
+                    tools:text="kukumber_01" />
+
+                <TextView
+                    android:id="@+id/profileMeta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="monospace"
+                    android:maxLines="1"
+                    android:textColor="@color/muted"
+                    android:textSize="10.5sp"
+                    tools:text="3 серв." />
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="4dp"
+                    android:importantForAccessibility="no"
+                    android:rotation="90"
+                    android:src="@drawable/ic_k_chevron"
+                    app:tint="@color/muted" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/addProfileButton"
+            style="@style/Dash.IconButton"
+            android:contentDescription="@string/dash_add_config"
+            android:src="@drawable/ic_k_add" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/contentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- ===================== VPN ===================== -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/vpnPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none">
+
+            <LinearLayout style="@style/Dash.Screen">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        style="@style/Dash.TitleIcon"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:src="@drawable/ic_k_shield"
+                        app:tint="@color/accent" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:letterSpacing="-0.02"
+                        android:text="@string/dashboard_vpn"
+                        android:textColor="@color/text"
+                        android:textSize="26sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/vpnStatusTag"
+                        style="@style/Dash.StatusTag"
+                        android:text="@string/dash_tag_off" />
+                </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/vpnConnectButton"
+                    android:layout_width="168dp"
+                    android:layout_height="168dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="22dp"
+                    android:background="@drawable/bg_connect_ring"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                    <LinearLayout
+                        android:layout_width="118dp"
+                        android:layout_height="118dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_connect_core"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:id="@+id/vpnPowerIcon"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginBottom="6dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_k_power"
+                            app:tint="@color/muted" />
+
+                        <TextView
+                            android:id="@+id/vpnConnectVerb"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.02"
+                            android:text="@string/vpn_connect"
+                            android:textColor="@color/text"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/vpnTimer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:fontFamily="monospace"
+                            android:text="00:00:00"
+                            android:textColor="@color/muted"
+                            android:textSize="10.5sp" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        style="@style/Dash.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="5dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/Dash.Label"
+                            android:drawablePadding="5dp"
+                            android:gravity="center_vertical"
+                            android:text="@string/dash_speed"
+                            app:drawableStartCompat="@drawable/ic_speed"
+                            app:drawableTint="@color/muted" />
+
+                        <TextView
+                            android:id="@+id/vpnSpeed"
+                            style="@style/Dash.MonoValue"
+                            android:text="@string/dash_speed_empty" />
+
+                        <TextView
+                            android:id="@+id/vpnTraffic"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="monospace"
+                            android:maxLines="1"
+                            android:textColor="@color/muted"
+                            android:textSize="10sp"
+                            tools:text="↓ 12 МБ ↑ 1 МБ" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/vpnCountryCard"
+                        style="@style/Dash.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="5dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                style="@style/Dash.Label"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:drawablePadding="5dp"
+                                android:gravity="center_vertical"
+                                android:text="@string/dash_server"
+                                app:drawableStartCompat="@drawable/ic_k_globe"
+                                app:drawableTint="@color/muted" />
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_k_chevron"
+                                app:tint="@color/muted" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/vpnCountry"
+                            style="@style/Dash.MonoValue"
+                            android:text="—" />
+
+                        <TextView
+                            android:id="@+id/vpnNode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/dash_pick_server_hint"
+                            android:textColor="@color/muted"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Dash.SectionLabel"
+                    android:text="@string/dash_protocol" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/protocolVless"
+                        style="@style/Dash.ProtoChip"
+                        android:layout_marginEnd="5dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginEnd="8dp"
+                            android:duplicateParentState="true"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_k_shield"
+                            app:tint="@color/tab_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="monospace"
+                            android:text="VLESS"
+                            android:textColor="@color/tab_text"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/protocolHysteria"
+                        style="@style/Dash.ProtoChip"
+                        android:layout_marginStart="5dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginEnd="8dp"
+                            android:duplicateParentState="true"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_k_bolt"
+                            app:tint="@color/tab_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="monospace"
+                            android:text="Hysteria2"
+                            android:textColor="@color/tab_text"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/vpnError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_status_tag_off"
+                    android:padding="10dp"
+                    android:textColor="@color/danger"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/vpnLogsButton"
+                    style="@style/Dash.RowButton">
+
+                    <ImageView
+                        style="@style/Dash.RowIcon"
+                        android:src="@drawable/ic_k_logs" />
+
+                    <TextView
+                        style="@style/Dash.RowText"
+                        android:text="@string/dash_vpn_logs" />
+
+                    <ImageView
+                        style="@style/Dash.RowIcon"
+                        android:layout_marginEnd="0dp"
+                        android:src="@drawable/ic_k_chevron" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- ===================== TgWsProxy ===================== -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/tgwsPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout style="@style/Dash.Screen">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        style="@style/Dash.TitleIcon"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:src="@drawable/ic_telegram" />
+
+                    <TextView
+                        style="@style/Dash.AppTitle"
+                        android:layout_width="0dp"
+                        android:layout_marginTop="0dp"
+                        android:layout_weight="1"
+                        android:text="TgWsProxy" />
+
+                    <TextView
+                        android:id="@+id/tgStatusTag"
+                        style="@style/Dash.StatusTag"
+                        android:text="@string/dash_tag_stopped" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tgStatus"
+                    style="@style/Dash.AppSub"
+                    android:text="@string/dash_tgws_sub" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/tgToggleButton"
+                    style="@style/Dash.BigAction"
+                    android:text="@string/telegram_proxy_start"
+                    app:icon="@drawable/ic_k_play"
+                    app:iconGravity="textStart" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/tgApplyButton"
+                    style="@style/Dash.BigAction"
+                    android:text="@string/apply_in_telegram"
+                    app:icon="@drawable/ic_telegram"
+                    app:iconGravity="textStart"
+                    app:iconTint="@null" />
+
+                <TextView
+                    android:id="@+id/tgError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/bg_status_tag_off"
+                    android:padding="10dp"
+                    android:textColor="@color/danger"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        style="@style/Dash.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="5dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            style="@style/Dash.Label"
+                            android:text="@string/dash_packets" />
+
+                        <TextView
+                            style="@style/Dash.MonoValue"
+                            android:layout_marginTop="6dp"
+                            android:text="MTProto · WS"
+                            android:textSize="13.5sp"
+                            android:textStyle="normal" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        style="@style/Dash.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            style="@style/Dash.Label"
+                            android:text="@string/dash_port" />
+
+                        <TextView
+                            android:id="@+id/tgPort"
+                            style="@style/Dash.MonoValue"
+                            android:layout_marginTop="6dp"
+                            android:textSize="13.5sp"
+                            android:textStyle="normal"
+                            tools:text="1443" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        style="@style/Dash.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="5dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            style="@style/Dash.Label"
+                            android:text="@string/dash_connections" />
+
+                        <TextView
+                            android:id="@+id/tgConnections"
+                            style="@style/Dash.MonoValue"
+                            android:layout_marginTop="6dp"
+                            android:text="0 / 0"
+                            android:textSize="13.5sp"
+                            android:textStyle="normal" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        style="@style/Dash.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            style="@style/Dash.Label"
+                            android:text="@string/dash_traffic" />
+
+                        <TextView
+                            android:id="@+id/tgTraffic"
+                            style="@style/Dash.MonoValue"
+                            android:layout_marginTop="6dp"
+                            android:text="↑ 0 Б  ↓ 0 Б"
+                            android:textSize="13.5sp"
+                            android:textStyle="normal" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Dash.SectionLabel"
+                    android:text="@string/dash_proxy_link" />
+
+                <LinearLayout
+                    android:id="@+id/tgLinkBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_dashed_border"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="10dp">
+
+                    <ImageView
+                        style="@style/Dash.RowIcon"
+                        android:layout_marginEnd="10dp"
+                        android:src="@drawable/ic_k_link"
+                        app:tint="@color/accent2" />
+
+                    <TextView
+                        android:id="@+id/tgLinkText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:fontFamily="monospace"
+                        android:maxLines="1"
+                        android:textColor="@color/accent2"
+                        android:textSize="11.5sp"
+                        tools:text="tg://proxy?server=127.0.0.1&amp;port=1443&amp;secret=ee..." />
+
+                    <ImageView
+                        android:id="@+id/tgCopyButton"
+                        style="@style/Dash.IconButton"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:contentDescription="@string/cmd_history_copy"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_k_copy" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tgLogsButton"
+                    style="@style/Dash.RowButton">
+
+                    <ImageView
+                        style="@style/Dash.RowIcon"
+                        android:src="@drawable/ic_k_logs" />
+
+                    <TextView
+                        style="@style/Dash.RowText"
+                        android:text="@string/dash_logs" />
+
+                    <ImageView
+                        style="@style/Dash.RowIcon"
+                        android:layout_marginEnd="0dp"
+                        android:src="@drawable/ic_k_chevron" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- ===================== byebyeDPI ===================== -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/byedpiPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout style="@style/Dash.Screen">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        style="@style/Dash.TitleIcon"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:src="@drawable/ic_k_tune"
+                        app:tint="@color/accent2" />
+
+                    <TextView
+                        style="@style/Dash.AppTitle"
+                        android:layout_marginTop="0dp"
+                        android:text="byebyeDPI" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Dash.AppSub"
+                    android:text="@string/dash_dpi_sub" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:background="@drawable/bg_card"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="14dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dash_dpi_bypass"
+                            android:textColor="@color/text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/byedpiStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:text="@string/dash_dpi_off"
+                            android:textColor="@color/muted"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/byedpiToggleButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_power_button_off"
+                        android:clickable="true"
+                        android:drawablePadding="6dp"
+                        android:focusable="true"
+                        android:fontFamily="monospace"
+                        android:gravity="center_vertical"
+                        android:paddingStart="12dp"
+                        android:paddingTop="9dp"
+                        android:paddingEnd="14dp"
+                        android:paddingBottom="9dp"
+                        android:text="@string/status_disabled"
+                        android:textColor="@color/danger"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:drawableStartCompat="@drawable/ic_k_power"
+                        app:drawableTint="@color/danger" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Dash.SectionLabel"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/dash_tools" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/strategyButton"
+                        style="@style/Dash.Tile"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="5dp">
+
+                        <ImageView
+                            style="@style/Dash.TileIcon"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_k_code"
+                            app:tint="@color/accent" />
+
+                        <TextView
+                            style="@style/Dash.TileName"
+                            android:text="@string/dash_tool_editor" />
+
+                        <TextView
+                            style="@style/Dash.TileDesc"
+                            android:text="@string/dash_tool_editor_desc" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/domainListsButton"
+                        style="@style/Dash.Tile"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="5dp">
+
+                        <ImageView
+                            style="@style/Dash.TileIcon"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_k_list"
+                            app:tint="@color/accent2" />
+
+                        <TextView
+                            style="@style/Dash.TileName"
+                            android:text="@string/dash_tool_lists" />
+
+                        <TextView
+                            style="@style/Dash.TileDesc"
+                            android:text="@string/dash_tool_lists_desc" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/strategyTestButton"
+                        style="@style/Dash.Tile"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="5dp">
+
+                        <ImageView
+                            style="@style/Dash.TileIcon"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_k_refresh"
+                            app:tint="@color/warn" />
+
+                        <TextView
+                            style="@style/Dash.TileName"
+                            android:text="@string/dash_tool_test" />
+
+                        <TextView
+                            style="@style/Dash.TileDesc"
+                            android:text="@string/dash_tool_test_desc" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/byedpiLogsButton"
+                        style="@style/Dash.Tile"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="5dp">
+
+                        <ImageView
+                            style="@style/Dash.TileIcon"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_k_logs"
+                            app:tint="@color/muted" />
+
+                        <TextView
+                            style="@style/Dash.TileName"
+                            android:text="@string/dash_logs" />
+
+                        <TextView
+                            style="@style/Dash.TileDesc"
+                            android:text="@string/dash_tool_logs_desc" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- ===================== Настройки ===================== -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settingsPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout style="@style/Dash.Screen">
+
+                <TextView
+                    style="@style/Dash.AppTitle"
+                    android:text="@string/settings" />
+
+                <TextView
+                    style="@style/Dash.AppSub"
+                    android:text="@string/dash_settings_sub" />
+
+                <TextView
+                    style="@style/Dash.SectionLabel"
+                    android:layout_marginTop="0dp"
+                    android:text="@string/dash_group_profile" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/manageProfileButton"
+                        style="@style/Dash.SetItem">
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:src="@drawable/ic_k_list" />
+
+                        <TextView
+                            style="@style/Dash.SetText"
+                            android:text="@string/dash_profiles" />
+
+                        <TextView
+                            android:id="@+id/profilesCount"
+                            style="@style/Dash.RightVal"
+                            android:layout_marginEnd="6dp"
+                            tools:text="2 проф." />
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:layout_marginEnd="0dp"
+                            android:src="@drawable/ic_k_chevron" />
+                    </LinearLayout>
+
+                    <View style="@style/Dash.Divider" />
+
+                    <LinearLayout
+                        android:id="@+id/addConfigButton"
+                        style="@style/Dash.SetItem">
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:src="@drawable/ic_k_add" />
+
+                        <TextView
+                            style="@style/Dash.SetText"
+                            android:text="@string/dash_add_config" />
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:layout_marginEnd="0dp"
+                            android:src="@drawable/ic_k_chevron" />
+                    </LinearLayout>
+
+                    <View style="@style/Dash.Divider" />
+
+                    <LinearLayout
+                        android:id="@+id/updateProfilesButton"
+                        style="@style/Dash.SetItem">
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:src="@drawable/ic_k_refresh" />
+
+                        <TextView
+                            style="@style/Dash.SetText"
+                            android:text="@string/dash_update_all" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Dash.SectionLabel"
+                    android:text="@string/dash_group_app" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/openSettingsButton"
+                        style="@style/Dash.SetItem">
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:src="@drawable/ic_k_settings" />
+
+                        <TextView
+                            style="@style/Dash.SetText"
+                            android:text="@string/dash_set_byedpi" />
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:layout_marginEnd="0dp"
+                            android:src="@drawable/ic_k_chevron" />
+                    </LinearLayout>
+
+                    <View style="@style/Dash.Divider" />
+
+                    <LinearLayout
+                        android:id="@+id/updatesButton"
+                        style="@style/Dash.SetItem">
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:src="@drawable/ic_k_down" />
+
+                        <TextView
+                            style="@style/Dash.SetText"
+                            android:text="@string/dash_set_updates" />
+
+                        <TextView
+                            android:id="@+id/updatesBadge"
+                            style="@style/Dash.StatusTag"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/bg_status_tag_on"
+                            android:text="@string/dash_update_badge"
+                            android:textColor="@color/accent"
+                            android:visibility="gone" />
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:layout_marginEnd="0dp"
+                            android:src="@drawable/ic_k_chevron" />
+                    </LinearLayout>
+
+                    <View style="@style/Dash.Divider" />
+
+                    <LinearLayout
+                        style="@style/Dash.SetItem"
+                        android:clickable="false"
+                        android:focusable="false">
+
+                        <ImageView
+                            style="@style/Dash.RowIcon"
+                            android:src="@drawable/ic_info" />
+
+                        <TextView
+                            style="@style/Dash.SetText"
+                            android:text="@string/dash_version" />
+
+                        <TextView
+                            android:id="@+id/versionValue"
+                            style="@style/Dash.RightVal"
+                            tools:text="1.0.0" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </FrameLayout>
+
+    <!-- ===================== Bottom tabs ===================== -->
+    <View style="@style/Dash.Divider" />
+
+    <LinearLayout
+        android:id="@+id/tabBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/panel"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/tabVpn"
+            style="@style/Dash.Tab">
+
+            <FrameLayout style="@style/Dash.TabDot">
+
+                <ImageView
+                    style="@style/Dash.TabIcon"
+                    android:src="@drawable/ic_k_shield" />
+            </FrameLayout>
+
+            <TextView
+                style="@style/Dash.TabText"
+                android:text="@string/dashboard_vpn" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabTgws"
+            style="@style/Dash.Tab">
+
+            <FrameLayout style="@style/Dash.TabDot">
+
+                <ImageView
+                    android:id="@+id/tabTgwsIcon"
+                    style="@style/Dash.TabIcon"
+                    android:src="@drawable/ic_telegram"
+                    app:tint="@null" />
+            </FrameLayout>
+
+            <TextView
+                style="@style/Dash.TabText"
+                android:text="TgWs" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabDpi"
+            style="@style/Dash.Tab">
+
+            <FrameLayout style="@style/Dash.TabDot">
+
+                <ImageView
+                    style="@style/Dash.TabIcon"
+                    android:src="@drawable/ic_k_tune" />
+            </FrameLayout>
+
+            <TextView
+                style="@style/Dash.TabText"
+                android:text="byebyeDPI" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabSettings"
+            style="@style/Dash.Tab">
+
+            <FrameLayout style="@style/Dash.TabDot">
+
+                <ImageView
+                    style="@style/Dash.TabIcon"
+                    android:src="@drawable/ic_k_settings" />
+            </FrameLayout>
+
+            <TextView
+                style="@style/Dash.TabText"
+                android:text="@string/settings" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

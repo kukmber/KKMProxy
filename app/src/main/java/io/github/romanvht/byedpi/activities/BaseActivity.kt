@@ -12,6 +12,8 @@ import io.github.romanvht.byedpi.utility.getStringNotNull
 
 abstract class BaseActivity : AppCompatActivity() {
 
+    protected open val useDynamicColors: Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val prefs = getPreferences()
 
@@ -21,7 +23,7 @@ abstract class BaseActivity : AppCompatActivity() {
         val theme = prefs.getStringNotNull("app_theme", "system")
         SettingsUtils.setTheme(theme)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (useDynamicColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             DynamicColors.applyToActivityIfAvailable(this)
         }
 

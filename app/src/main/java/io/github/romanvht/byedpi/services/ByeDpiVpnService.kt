@@ -376,7 +376,7 @@ class ByeDpiVpnService : LifecycleVpnService() {
     private fun createBuilder(dns: String, ipv6: Boolean): Builder {
         Log.d(TAG, "DNS: $dns")
         val builder = Builder()
-        builder.setSession("ByeDPI")
+        builder.setSession(getString(R.string.notification_title))
         builder.setConfigureIntent(
             PendingIntent.getActivity(
                 this,

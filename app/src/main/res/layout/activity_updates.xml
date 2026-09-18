@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/view_topbar" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
+
+        <LinearLayout style="@style/Dash.Screen">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    style="@style/Dash.Label"
+                    android:text="@string/updates_current" />
+
+                <TextView
+                    android:id="@+id/currentVersion"
+                    style="@style/Dash.MonoValue"
+                    android:textSize="17sp"
+                    tools:text="KKMProxy 1.0.0" />
+
+                <TextView
+                    android:id="@+id/updateStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp"
+                    tools:text="Установлена последняя версия" />
+
+                <TextView
+                    android:id="@+id/releaseNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_dashed_border"
+                    android:ellipsize="end"
+                    android:maxLines="8"
+                    android:padding="12dp"
+                    android:textColor="@color/text"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    tools:text="Что нового" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/checkButton"
+                    style="@style/Dash.BigAction"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginBottom="0dp"
+                    android:text="@string/updates_check"
+                    app:icon="@drawable/ic_k_refresh"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/bg" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/installButton"
+                    style="@style/Dash.BigAction"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="0dp"
+                    android:text="@string/updates_install"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_k_down"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/bg" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/repoRow"
+                style="@style/Dash.RowButton">
+
+                <ImageView
+                    style="@style/Dash.RowIcon"
+                    android:src="@drawable/ic_github" />
+
+                <TextView
+                    style="@style/Dash.RowText"
+                    android:text="@string/updates_repo" />
+
+                <TextView
+                    android:id="@+id/repoValue"
+                    style="@style/Dash.RightVal"
+                    android:layout_marginEnd="8dp"
+                    android:ellipsize="start"
+                    android:maxLines="1"
+                    tools:text="user/KKMProxy" />
+
+                <ImageView
+                    style="@style/Dash.RowIcon"
+                    android:layout_marginEnd="0dp"
+                    android:src="@drawable/ic_k_chevron" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/Dash.SectionLabel"
+                android:text="@string/updates_components" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/updates_components_hint"
+                android:textColor="@color/muted"
+                android:textSize="11.5sp" />
+
+            <LinearLayout
+                android:id="@+id/componentsList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

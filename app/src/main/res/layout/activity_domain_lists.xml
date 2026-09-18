@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/view_topbar" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:text="@string/lists_sub"
+        android:textColor="@color/muted"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/listsTotal"
+        style="@style/Dash.SectionLabel"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="18dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listsRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="84dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/listsAddButton"
+        style="@style/Dash.BigAction"
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="14dp"
+        android:text="@string/lists_add"
+        app:icon="@drawable/ic_k_add"
+        app:iconGravity="textStart"
+        app:iconTint="@color/bg" />
+</LinearLayout>

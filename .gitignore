@@ -20,3 +20,9 @@ local.properties
 
 # JNI
 app/src/main/jniLibs/
+# ключ подписи
+keystore.properties
+*.jks
+
+# распакованные библиотеки, в репозиторий не нужны
+extracted/

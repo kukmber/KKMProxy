@@ -1,40 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.ByeDPI" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">#5976DF</item>
-        <item name="colorPrimaryVariant">#3C52A3</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/accent_dim</item>
+        <item name="colorOnPrimary">@color/bg</item>
 
-        <item name="colorSecondary">#5976DF</item>
-        <item name="colorSecondaryVariant">#3C52A3</item>
-        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorSecondary">@color/accent2</item>
+        <item name="colorSecondaryVariant">@color/accent2</item>
+        <item name="colorOnSecondary">@color/bg</item>
 
-        <item name="android:statusBarColor">#3C52A3</item>
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:colorBackground">@color/bg</item>
 
-        <item name="colorSurface">#F5F5F5</item>
-        <item name="colorOnSurface">#212121</item>
+        <item name="colorSurface">@color/panel</item>
+        <item name="colorOnSurface">@color/text</item>
+        <item name="colorOnSurfaceVariant">@color/muted</item>
 
-        <item name="materialCardViewStyle">@style/SmallShadowCard</item>
+        <item name="colorError">@color/danger</item>
+        <item name="colorOnError">@color/text</item>
+
+        <item name="colorOutline">@color/line</item>
+
+        <item name="materialCardViewStyle">@style/DarkCard</item>
+        <item name="bottomNavigationStyle">@style/DarkBottomNav</item>
     </style>
 
-    <style name="AppToolbar" parent="Widget.MaterialComponents.Toolbar.Primary" />
+    <style name="AppToolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
+        <item name="android:background">@color/panel</item>
+        <item name="titleTextColor">@color/text</item>
+    </style>
 
+    <style name="DarkCard" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/panel_2</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">14dp</item>
+        <item name="strokeColor">@color/line</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- Используется в values-night / values-v31 / values-night-v31 -->
     <style name="SmallShadowCard" parent="Widget.MaterialComponents.CardView">
         <item name="cardElevation">1dp</item>
+        <item name="cardCornerRadius">12dp</item>
+    </style>
+
+    <style name="DarkBottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="android:background">@color/panel</item>
+        <item name="itemIconTint">@color/muted</item>
+        <item name="itemTextColor">@color/muted</item>
     </style>
 
     <style name="CircleButton" parent="Widget.MaterialComponents.Button">
         <item name="cornerRadius">60dp</item>
         <item name="android:textSize">0sp</item>
-        <item name="backgroundTint">?attr/colorPrimary</item>
-        <item name="iconTint">?attr/colorOnPrimary</item>
+        <item name="backgroundTint">@color/accent</item>
+        <item name="iconTint">@color/bg</item>
     </style>
 
     <style name="CustomAlertDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <!-- -->
+        <item name="android:background">@color/panel</item>
+        <item name="colorSurface">@color/panel</item>
     </style>
 
     <style name="PillCard">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">50%</item>
+        <item name="cornerSize">999dp</item>
+    </style>
+
+    <style name="AccentButton" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/accent</item>
+        <item name="android:textColor">@color/bg</item>
+        <item name="cornerRadius">14dp</item>
+    </style>
+
+    <style name="DangerButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/danger</item>
+        <item name="android:textColor">@color/danger</item>
+        <item name="cornerRadius">14dp</item>
+    </style>
+
+    <!-- Dashboard: всегда тёмная, не переопределяется в values-v31 / values-night -->
+    <style name="DashboardTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/accent_dim</item>
+        <item name="colorOnPrimary">@color/bg</item>
+        <item name="colorSecondary">@color/accent2</item>
+        <item name="colorOnSecondary">@color/bg</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="colorSurface">@color/panel</item>
+        <item name="colorOnSurface">@color/text</item>
+        <item name="colorError">@color/danger</item>
+        <item name="colorControlHighlight">#1AFFFFFF</item>
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:textColorPrimary">@color/text</item>
+        <item name="android:textColorSecondary">@color/muted</item>
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/panel</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="alertDialogTheme">@style/DashboardDialog</item>
+        <item name="bottomSheetDialogTheme">@style/Dash.BottomSheetDialog</item>
+    </style>
+
+    <style name="DashboardDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:background">@color/panel</item>
+        <item name="colorSurface">@color/panel</item>
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:textColorPrimary">@color/text</item>
+        <item name="android:textColorSecondary">@color/muted</item>
+    </style>
+
+    <style name="Dash" />
+
+    <style name="Dash.Screen">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">14dp</item>
+    </style>
+
+    <style name="Dash.AppTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.015</item>
+    </style>
+
+    <style name="Dash.AppSub">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">18dp</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Dash.SectionLabel">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:layout_marginStart">2dp</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.03</item>
+    </style>
+
+    <style name="Dash.StatusTag">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/danger</item>
+        <item name="android:background">@drawable/bg_status_tag_off</item>
+    </style>
+
+    <style name="Dash.Label">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">10.5sp</item>
+    </style>
+
+    <style name="Dash.MonoValue">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="Dash.Card">
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+    </style>
+
+    <style name="Dash.RowButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="Dash.RowText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="Dash.Chevron">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:text">›</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="Dash.BigAction" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">54dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="iconSize">18dp</item>
+        <item name="iconPadding">8dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="backgroundTint">@color/accent</item>
+        <item name="strokeColor">@color/accent</item>
+        <item name="android:textColor">@color/bg</item>
+    </style>
+
+    <style name="Dash.Tile">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+    </style>
+
+    <style name="Dash.TileIcon">
+        <item name="android:layout_width">30dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:background">@drawable/bg_icon_box</item>
+        <item name="android:padding">6dp</item>
+        <item name="tint">@color/muted</item>
+    </style>
+
+    <style name="Dash.TileName">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">13.5sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Dash.TileDesc">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">10.5sp</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
+    </style>
+
+    <style name="Dash.Tab">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingTop">11dp</item>
+        <item name="android:paddingBottom">14dp</item>
+    </style>
+
+    <style name="Dash.TabDot">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">28dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:background">@drawable/bg_tab_dot</item>
+        <item name="android:duplicateParentState">true</item>
+    </style>
+
+    <style name="Dash.TabIcon">
+        <item name="android:layout_width">18dp</item>
+        <item name="android:layout_height">18dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:duplicateParentState">true</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="tint">@color/tab_icon</item>
+    </style>
+
+    <style name="Dash.ProtoChip">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_proto_chip</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <style name="Dash.TabText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/tab_text</item>
+        <item name="android:textSize">10.5sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:duplicateParentState">true</item>
+    </style>
+
+    <style name="Dash.SheetItem">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:paddingTop">13dp</item>
+        <item name="android:paddingBottom">13dp</item>
+    </style>
+
+    <style name="Dash.SheetIcon">
+        <item name="android:layout_width">30dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:layout_marginEnd">12dp</item>
+        <item name="android:background">@drawable/bg_icon_box</item>
+        <item name="android:padding">6dp</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <style name="Dash.SheetText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">13.5sp</item>
+    </style>
+
+    <style name="Dash.Divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/line</item>
+    </style>
+
+    <style name="Dash.SetItem">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:paddingTop">13dp</item>
+        <item name="android:paddingBottom">13dp</item>
+    </style>
+
+    <style name="Dash.SetText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">13.5sp</item>
+    </style>
+
+    <style name="Dash.RightVal">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Dash.IconButton">
+        <item name="android:layout_width">34dp</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:background">@drawable/bg_add_button</item>
+        <item name="android:foreground">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:padding">7dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="tint">@color/muted</item>
+    </style>
+
+    <style name="Dash.Chip">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:drawablePadding">6dp</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">12sp</item>
+        <item name="drawableTint">@color/muted</item>
+    </style>
+
+    <style name="Dash.TitleIcon">
+        <item name="android:layout_width">22dp</item>
+        <item name="android:layout_height">22dp</item>
+        <item name="android:layout_marginEnd">10dp</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <style name="Dash.RowIcon">
+        <item name="android:layout_width">18dp</item>
+        <item name="android:layout_height">18dp</item>
+        <item name="android:layout_marginEnd">12dp</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="tint">@color/muted</item>
+    </style>
+
+    <style name="Dash.Input" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/accent</item>
+        <item name="boxBackgroundColor">@color/panel_2</item>
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="hintTextColor">@color/accent</item>
+        <item name="android:textColorHint">@color/muted</item>
+    </style>
+
+    <style name="Dash.BottomSheetDialog" parent="Theme.MaterialComponents.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Dash.BottomSheet</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:navigationBarColor">@color/panel</item>
+    </style>
+
+    <style name="Dash.BottomSheet" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
     </style>
 </resources>

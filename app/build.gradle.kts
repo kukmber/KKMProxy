@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import java.util.zip.GZIPInputStream
 
 plugins {
     id("com.android.application")
@@ -7,6 +9,44 @@ plugins {
 
 val abis = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
+// Ядро VPN — mihomo (как в FlClashX). Бинарник кладётся в APK как libmihomo.so
+// и запускается отдельным процессом из nativeLibraryDir.
+val mihomoVersion = "v1.19.31"
+val mihomoAbis = mapOf(
+    "arm64-v8a" to "arm64-v8",
+    "armeabi-v7a" to "armv7",
+    "x86" to "386",
+    "x86_64" to "amd64",
+)
+val mihomoDir = layout.projectDirectory.dir("mihomo-bin/$mihomoVersion")
+
+// Своя нумерация KKMProxy; versionCode не понижаем, иначе обновление поверх не встанет
+val appVersionName = "1.0.0"
+
+// Версия оригинального tg-ws-proxy, с которого сделан Kotlin-порт TgWsProxy
+val tgwsPortedFrom = "v1.10.2"
+
+// Версия ядра ByeDPI берётся прямо из исходников подмодуля
+fun byedpiVersion(): String = file("src/main/cpp/byedpi/main.c")
+    .takeIf { it.exists() }
+    ?.readLines()
+    ?.firstNotNullOfOrNull { Regex("""#define\s+VERSION\s+"([^"]+)"""").find(it)?.groupValues?.get(1) }
+    ?: "unknown"
+
+// Готовые файлы называются KKMProxy-1.0.0-arm64-v8a-debug.apk и т.п.
+base {
+    archivesName.set("KKMProxy-$appVersionName")
+}
+
+// Ключ подписи: локально — keystore.properties, на CI — переменные окружения
+val keystoreProps = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun signingValue(key: String, env: String): String? =
+    keystoreProps.getProperty(key) ?: System.getenv(env)
+
 android {
     namespace = "io.github.romanvht.byedpi"
     //noinspection GradleDependency
@@ -14,11 +54,11 @@ android {
 
     defaultConfig {
         applicationId = "io.github.romanvht.byedpi"
-        minSdk = 21
+        minSdk = 23
         //noinspection OldTargetApi
         targetSdk = 34
         versionCode = 1780
-        versionName = "1.7.8"
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -32,12 +72,35 @@ android {
         viewBinding = true
     }
 
+    // Версии встроенных компонентов — показываются на экране обновлений
+    defaultConfig {
+        buildConfigField("String", "MIHOMO_VERSION", "\"$mihomoVersion\"")
+        buildConfigField("String", "BYEDPI_VERSION", "\"v${byedpiVersion()}\"")
+        buildConfigField("String", "TGWS_VERSION", "\"$tgwsPortedFrom\"")
+    }
+
+    signingConfigs {
+        create("release") {
+            val store = signingValue("storeFile", "KEYSTORE_FILE")
+            if (store != null && file(store).exists()) {
+                storeFile = file(store)
+                storePassword = signingValue("storePassword", "KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // Без ключа релиз соберётся неподписанным, а не упадёт
+            signingConfig = signingConfigs.getByName("release").takeIf { it.storeFile != null }
             buildConfigField("String", "VERSION_NAME",  "\"${defaultConfig.versionName}\"")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            isMinifyEnabled = true
-            isShrinkResources = true
+            // Основной вес APK — ядро mihomo, его сжатие кода не трогает;
+            // зато R8 ломает разбор YAML/JSON по отражению и требует много памяти
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
         debug {
             buildConfigField("String", "VERSION_NAME",  "\"${defaultConfig.versionName}-debug\"")
@@ -70,6 +133,24 @@ android {
         includeInBundle = false
     }
 
+    sourceSets {
+        getByName("main") {
+            jniLibs.srcDir(mihomoDir)
+        }
+    }
+
+    lint {
+        // Полный анализ съедает много памяти и для выпуска сборки не нужен
+        checkReleaseBuilds = false
+    }
+
+    packaging {
+        jniLibs {
+            // Исполняемый libmihomo.so должен лежать на диске
+            useLegacyPackaging = true
+        }
+    }
+
     splits {
         abi {
             isEnable = true
@@ -90,7 +171,14 @@ dependencies {
     implementation("androidx.preference:preference-ktx:1.2.1")
     implementation("com.google.android.material:material:1.13.0")
     implementation("com.google.code.gson:gson:2.14.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("org.yaml:snakeyaml:2.2")
+    // QR-сканер; core 3.3.0 — чтобы не требовался minSdk 24
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0") { isTransitive = false }
+    implementation("com.google.zxing:core:3.3.0")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 }
@@ -114,6 +202,29 @@ tasks.register<Exec>("runNdkBuild") {
     println("Command: $commandLine")
 }
 
+val downloadMihomo by tasks.registering {
+    group = "build"
+    description = "Скачивает mihomo $mihomoVersion для всех ABI"
+    val targetDir = mihomoDir.asFile
+    outputs.dir(targetDir)
+    doLast {
+        mihomoAbis.forEach { (abi, arch) ->
+            val target = File(targetDir, "$abi/libmihomo.so")
+            if (target.exists() && target.length() > 0) return@forEach
+            target.parentFile.mkdirs()
+            val url = "https://github.com/MetaCubeX/mihomo/releases/download/$mihomoVersion/" +
+                "mihomo-android-$arch-$mihomoVersion.gz"
+            logger.lifecycle("Downloading $url")
+            val tmp = File(target.path + ".part")
+            GZIPInputStream(uri(url).toURL().openStream()).use { input ->
+                tmp.outputStream().use { input.copyTo(it) }
+            }
+            tmp.renameTo(target)
+        }
+    }
+}
+
 tasks.preBuild {
     dependsOn("runNdkBuild")
+    dependsOn(downloadMihomo)
 }

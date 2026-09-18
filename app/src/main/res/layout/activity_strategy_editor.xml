@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/view_topbar" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
+
+        <LinearLayout style="@style/Dash.Screen">
+
+            <LinearLayout
+                android:id="@+id/cmdDisabledCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/bg_status_tag_warn"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/editor_cmd_disabled"
+                    android:textColor="@color/warn"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/enableCmdButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/bg_power_button_on"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingStart="12dp"
+                    android:paddingTop="7dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/editor_enable_cmd"
+                    android:textColor="@color/accent"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/Dash.SectionLabel"
+                android:layout_marginTop="4dp"
+                android:text="@string/editor_args" />
+
+            <EditText
+                android:id="@+id/cmdInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card"
+                android:fontFamily="monospace"
+                android:gravity="top|start"
+                android:hint="@string/editor_args_hint"
+                android:importantForAutofill="no"
+                android:inputType="textMultiLine|textNoSuggestions"
+                android:minLines="4"
+                android:padding="14dp"
+                android:textColor="@color/text"
+                android:textColorHint="@color/line"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="12dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/pasteButton"
+                    style="@style/Dash.Chip"
+                    android:text="@string/cmd_args_paste"
+                    app:drawableStartCompat="@drawable/ic_k_paste" />
+
+                <TextView
+                    android:id="@+id/copyButton"
+                    style="@style/Dash.Chip"
+                    android:text="@string/cmd_history_copy"
+                    app:drawableStartCompat="@drawable/ic_k_copy" />
+
+                <TextView
+                    android:id="@+id/clearButton"
+                    style="@style/Dash.Chip"
+                    android:text="@string/cmd_args_clear"
+                    app:drawableStartCompat="@drawable/ic_k_clear" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/applyButton"
+                style="@style/Dash.BigAction"
+                android:text="@string/editor_apply"
+                app:icon="@drawable/ic_k_check"
+                app:iconGravity="textStart"
+                app:iconTint="@color/bg" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/Dash.SectionLabel"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/editor_history" />
+
+                <ImageView
+                    android:id="@+id/historyMenuButton"
+                    style="@style/Dash.IconButton"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:padding="6dp"
+                    android:contentDescription="@string/cmd_history_menu"
+                    android:src="@drawable/ic_k_clear" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/historyList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/historyEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_dashed_border"
+                android:gravity="center"
+                android:padding="18dp"
+                android:text="@string/editor_history_empty"
+                android:textColor="@color/muted"
+                android:textSize="12sp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

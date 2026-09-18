@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="byedpi_docs">https://github.com/hufrea/byedpi/blob/main/README.md</string>
-    <string name="app_name">ByeByeDPI</string>
+    <string name="app_name">KKMProxy</string>
     <string name="cmd_documentation">Tài liệu</string>
     <string name="toggle_connect">Bật/Tắt</string>
     <string name="vpn_connect">Kết nối</string>
@@ -62,7 +62,7 @@
     <string name="failed_to_start">Không thể khởi động %1$s</string>
     <string name="vpn_channel_name">VPN</string>
     <string name="proxy_channel_name">Proxy</string>
-    <string name="notification_title">ByeByeDPI</string>
+    <string name="notification_title">KKMProxy (ByeByeDPI)</string>
     <string name="vpn_notification_content">VPN đang chạy</string>
     <string name="proxy_notification_content">Proxy đang chạy</string>
     <string name="general_category">Chung</string>

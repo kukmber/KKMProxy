@@ -3,9 +3,10 @@ package io.github.romanvht.byedpi.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.LinearLayout
+import android.widget.CompoundButton
 import android.widget.TextView
+import androidx.annotation.LayoutRes
+import androidx.annotation.StyleRes
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -17,12 +18,14 @@ class DomainListAdapter(
     private val onStateChanged: (DomainList) -> Unit,
     private val onEdit: (DomainList) -> Unit,
     private val onDelete: (DomainList) -> Unit,
-    private val onCopy: (DomainList) -> Unit
+    private val onCopy: (DomainList) -> Unit,
+    @param:LayoutRes private val itemLayout: Int = R.layout.item_domain_list,
+    @param:StyleRes private val dialogTheme: Int = R.style.CustomAlertDialog,
 ) : ListAdapter<DomainList, DomainListAdapter.DomainListViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DomainListViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_domain_list, parent, false)
-        val holder = DomainListViewHolder(view)
+        val view = LayoutInflater.from(parent.context).inflate(itemLayout, parent, false)
+        val holder = DomainListViewHolder(view, dialogTheme)
 
         holder.checkbox.setOnClickListener {
             val position = holder.bindingAdapterPosition
@@ -45,11 +48,15 @@ class DomainListAdapter(
         holder.bind(getItem(position))
     }
 
-    class DomainListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class DomainListViewHolder(
+        itemView: View,
+        @param:StyleRes private val dialogTheme: Int,
+    ) : RecyclerView.ViewHolder(itemView) {
         private val nameText: TextView = itemView.findViewById(R.id.list_name)
         private val countText: TextView = itemView.findViewById(R.id.list_count)
-        val checkbox: CheckBox = itemView.findViewById(R.id.list_checkbox)
-        val contentLayout: LinearLayout = itemView.findViewById(R.id.list_content)
+        private val sizeText: TextView? = itemView.findViewById(R.id.list_size)
+        val checkbox: CompoundButton = itemView.findViewById(R.id.list_checkbox)
+        val contentLayout: View = itemView.findViewById(R.id.list_content)
 
         fun bind(domainList: DomainList) {
             nameText.text = domainList.name
@@ -57,6 +64,7 @@ class DomainListAdapter(
             val domains = domainList.domains.take(5).joinToString("\n")
             val summary = if (domainList.domains.size > 5) "$domains\n..." else domains
             countText.text = summary
+            sizeText?.text = itemView.context.getString(R.string.lists_domains, domainList.domains.size)
 
             checkbox.isChecked = domainList.isActive
         }
@@ -74,7 +82,7 @@ class DomainListAdapter(
                 context.getString(R.string.domain_list_delete)
             )
 
-            AlertDialog.Builder(context, R.style.CustomAlertDialog)
+            AlertDialog.Builder(context, dialogTheme)
                 .setTitle(domainList.name)
                 .setItems(options) { _, which ->
                     when (which) {

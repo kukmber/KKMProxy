@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_vpn"
+        android:icon="@drawable/ic_vpn_key"
+        android:title="@string/dashboard_vpn" />
+    <item
+        android:id="@+id/navigation_tgws"
+        android:icon="@drawable/ic_telegram"
+        android:title="@string/dashboard_tgws" />
+    <item
+        android:id="@+id/navigation_byedpi"
+        android:icon="@drawable/ic_tune"
+        android:title="@string/dashboard_byedpi" />
+    <item
+        android:id="@+id/navigation_settings"
+        android:icon="@drawable/baseline_settings_24"
+        android:title="@string/settings" />
+</menu>

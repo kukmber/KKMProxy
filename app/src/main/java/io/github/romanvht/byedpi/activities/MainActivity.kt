@@ -23,12 +23,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import io.github.romanvht.byedpi.R
 import io.github.romanvht.byedpi.data.*
 import io.github.romanvht.byedpi.databinding.ActivityMainBinding
 import io.github.romanvht.byedpi.services.ServiceManager
 import io.github.romanvht.byedpi.services.appStatus
+import io.github.romanvht.byedpi.telegram.TelegramProxyService
+import io.github.romanvht.byedpi.telegram.TelegramProxyStatus
+import io.github.romanvht.byedpi.vpn.KkmVpnService
+import io.github.romanvht.byedpi.vpn.VpnConfigParser
 import io.github.romanvht.byedpi.utility.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,6 +69,15 @@ class MainActivity : BaseActivity() {
             } else {
                 Toast.makeText(this, R.string.vpn_permission_denied, Toast.LENGTH_SHORT).show()
                 updateStatus()
+            }
+        }
+
+    private val testVpnRegister =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                startTestVpn()
+            } else {
+                Toast.makeText(this, "VPN разрешение не получено", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -222,6 +237,41 @@ class MainActivity : BaseActivity() {
 
         binding.strategyButton.setOnClickListener {
             showStrategyPicker()
+        }
+
+        binding.telegramButton?.setOnClickListener {
+            when (TelegramProxyService.state.value.status) {
+                TelegramProxyStatus.STOPPED,
+                TelegramProxyStatus.FAILED -> TelegramProxyService.start(this)
+
+                TelegramProxyStatus.STARTING,
+                TelegramProxyStatus.RUNNING,
+                TelegramProxyStatus.STOPPING -> TelegramProxyService.stop(this)
+            }
+        }
+
+        binding.openTelegramButton?.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(TelegramProxyService.proxyLink(this)))
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, R.string.telegram_not_installed, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                TelegramProxyService.state.collect(::updateTelegramProxy)
+            }
+        }
+
+        binding.testVpnButton?.setOnClickListener {
+            val prepareIntent = VpnService.prepare(this)
+            if (prepareIntent != null) {
+                testVpnRegister.launch(prepareIntent)
+            } else {
+                startTestVpn()
+            }
         }
 
         if (!PermissionUtils.hasNotificationPermission(this)) {
@@ -389,6 +439,34 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
+
+    }
+
+    private fun updateTelegramProxy(state: io.github.romanvht.byedpi.telegram.TelegramProxyState) {
+        val running = state.status == TelegramProxyStatus.RUNNING
+        binding.telegramStatus?.setText(
+            when (state.status) {
+                TelegramProxyStatus.STOPPED -> R.string.telegram_proxy_stopped
+                TelegramProxyStatus.STARTING -> R.string.telegram_proxy_starting
+                TelegramProxyStatus.RUNNING -> R.string.telegram_proxy_running
+                TelegramProxyStatus.STOPPING -> R.string.telegram_proxy_stopping
+                TelegramProxyStatus.FAILED -> R.string.telegram_proxy_failed
+            }
+        )
+        binding.telegramButton?.setText(
+            if (state.status == TelegramProxyStatus.STOPPED || state.status == TelegramProxyStatus.FAILED) {
+                R.string.telegram_proxy_start
+            } else {
+                R.string.telegram_proxy_stop
+            }
+        )
+        binding.telegramButton?.isEnabled = state.status != TelegramProxyStatus.STARTING &&
+            state.status != TelegramProxyStatus.STOPPING
+        binding.openTelegramButton?.visibility = if (running) View.VISIBLE else View.GONE
+        binding.telegramError?.apply {
+            text = state.error
+            visibility = if (state.error.isNullOrBlank()) View.GONE else View.VISIBLE
+        }
     }
 
     private fun updateStrategyButton() {
@@ -498,6 +576,31 @@ class MainActivity : BaseActivity() {
 
             ServiceManager.restart(this, mode)
             Toast.makeText(this, R.string.service_restart, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun startTestVpn() {
+        Toast.makeText(this, "Загружаем подписку...", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                var profile = io.github.romanvht.byedpi.vpn.ProfileStore.selected(this@MainActivity)
+                    ?: throw IllegalStateException("Нет VPN-профиля")
+                if (profile.content.isBlank()) {
+                    profile = io.github.romanvht.byedpi.vpn.ProfileStore.refresh(this@MainActivity, profile)
+                }
+                val node = profile.nodes.firstOrNull { it.type == VpnConfigParser.TYPE_HYSTERIA2 && it.isSupported }
+                    ?: throw IllegalStateException("Hysteria2-узел не найден в подписке")
+
+                runOnUiThread {
+                    KkmVpnService.start(this@MainActivity, profile.id, node.name)
+                    Toast.makeText(this@MainActivity, "VPN запущен: ${node.name}", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка тестового VPN", e)
+                runOnUiThread {
+                    Toast.makeText(this@MainActivity, "Ошибка: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 

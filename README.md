@@ -1,65 +1,62 @@
 <div align="center">
-  <p>
-    <img src="https://github.com/romanvht/ByeDPIAndroid/raw/master/.github/images/app.svg" alt="Логотип ByeDPI" width="200" />
-  </p>
-  <h1>ByeByeDPI Android</h1>
-  <p>
-    Русский |
-    <a href="README-en.md">English</a> |
-    <a href="README-tr.md">Türkçe</a>
-  </p>
-  <p>
-    <a href="https://github.com/romanvht/ByeByeDPI/releases/latest"><img src="https://img.shields.io/github/v/release/romanvht/ByeByeDPI" alt="Latest Release" /></a>
-    <a href="https://github.com/romanvht/ByeByeDPI/releases"><img src="https://img.shields.io/github/downloads/romanvht/ByeByeDPI/total" alt="Downloads" /></a>
-    <a href="https://github.com/romanvht/ByeByeDPI/blob/master/LICENSE"><img src="https://img.shields.io/github/license/romanvht/ByeByeDPI" alt="License" /></a>
-    <a href="https://github.com/romanvht/ByeByeDPI"><img src="https://img.shields.io/github/languages/code-size/romanvht/ByeByeDPI" alt="GitHub code size in bytes"/></a>
-  </p>
+    <img src=".github/icon.png" alt="KKMProxy" width="150" />
+    <h1>KKMProxy</h1>
+    <p>VPN, прокси для Telegram и обход блокировок — в одном приложении для Android</p>
 </div>
 
-Приложение для Android, которое локально запускает ByeDPI и перенаправляет весь трафик через него.
+## Что умеет
 
-Для стабильной работы может потребоваться изменить настройки. Подробнее о различных настройках можно прочитать в [документации ByeDPI](https://github.com/hufrea/byedpi/blob/main/README.md).
+**VPN** — работает на ядре [mihomo](https://github.com/MetaCubeX/mihomo), том же, что во FlClashX.
 
-Приложение не является VPN. Оно использует VPN-режим на Android для перенаправления трафика, но не передает ничего на удаленный сервер. Оно не шифрует трафик и не скрывает ваш IP-адрес.
+- Подписки Clash/Mihomo YAML, base64, а также ссылки `vless://` и `hysteria2://`.
+- Несколько профилей: добавление по ссылке, из буфера обмена, QR-кода или файла.
+- Выбор сервера с флагом страны и задержкой, переключение между VLESS и Hysteria2.
+- Правила маршрутизации из подписки: российские сайты идут напрямую, остальное через VPN.
 
-У приложения есть единственный официальный сайт -> https://byebyedpi.xyz
+**TgWsProxy** — локальный прокси для Telegram через WebSocket, порт [tg-ws-proxy](https://github.com/Flowseal/tg-ws-proxy) на Kotlin. Запускается одной кнопкой, ссылка применяется в Telegram.
 
----
+**byebyeDPI** — обход блокировок без VPN на ядре [ByeDPI](https://github.com/hufrea/byedpi): редактор стратегий с историей, списки доменов и автоматический подбор рабочей стратегии.
 
-### Возможности
-* Автозапуск сервиса при старте устройства
-* Сохранение списков параметров командной строки
-* Улучшена совместимость с Android TV/BOX
-* Раздельное туннелирование приложений
-* Импорт/экспорт настроек
+Ещё есть живые логи по каждому разделу, обновление приложения из GitHub и сезонные иконки.
 
-### Использование
-* Для работы автозапуска активируйте пункт в настройках.
-* Рекомендуется подключится один раз к VPN, чтобы принять запрос.
-* После этого, при загрузке устройства, приложение автоматически запустит сервис в зависимости от настроек (VPN/Proxy)
-* Комплексная инструкция от комьюнити [ByeByeDPI-Manual](https://byebyedpi.xyz)
+## Установка
 
-### Сборка
-1. Клонируйте репозиторий с сабмодулями:
+Скачайте APK со страницы [релизов](../../releases/latest):
+
+- `KKMProxy-*-universal-release.apk` — подойдёт любому телефону;
+- `KKMProxy-*-arm64-v8a-release.apk` — меньше по размеру, для телефонов последних лет.
+
+Нужен Android 6.0 или новее. При установке разрешите установку приложений из этого источника, при первом подключении — разрешение на VPN.
+
+## Сборка
+
 ```bash
-git clone --recurse-submodules
+git clone --recurse-submodules git@github.com:kukmber/KKMProxy.git
+cd KKMProxy
+./gradlew assembleDebug
 ```
-2. Запустите скрипт сборки из корня репозитория:
-```bash
-./gradlew assembleRelease
+
+Gradle сам скачает ядро mihomo. Для подписанной сборки создайте `keystore.properties` в корне:
+
+```properties
+storeFile=/путь/к/ключу.jks
+storePassword=...
+keyAlias=kkmproxy
+keyPassword=...
 ```
-3. APK будет в `app/build/outputs/apk/release/`
 
-> P.S.: hev_socks5_tunnel не соберется под Windows, вам нужно будет использовать WSL
+Релизы собираются GitHub Actions по тегу вида `v1.0.1`; ключ подписи берётся из секретов `KEYSTORE_BASE64` и `KEYSTORE_PASSWORD`.
 
-### Хеш подписи
-SHA-256:
-`77:45:10:75:AC:EA:40:64:06:47:5D:74:D4:59:88:3A:49:A6:40:51:FA:F3:2E:42:F7:18:F3:F9:77:7A:8D:FB`
+## Из чего собрано
 
-### Зависимости
-- [ByeDPI](https://github.com/hufrea/byedpi)
-- [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)
+- [ByeByeDPI](https://github.com/romanvht/ByeByeDPI) — приложение, на основе которого сделан проект
+- [ByeDPI](https://github.com/hufrea/byedpi) — ядро обхода DPI
+- [mihomo](https://github.com/MetaCubeX/mihomo) — ядро VPN
+- [tg-ws-proxy](https://github.com/Flowseal/tg-ws-proxy) — оригинал прокси для Telegram
+- [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel) — туннель трафика в ядро
 
-### Благодарность
-- [hufrea](https://github.com/hufrea) - за [ByeDPI](https://github.com/hufrea/byedpi)
-- [dovecoteescapee](https://github.com/dovecoteescapee) - за изначальную реализацию [ByeDPIAndroid](https://github.com/dovecoteescapee/ByeDPIAndroid)
+Версии компонентов и новые версии оригиналов видно в приложении: «Настройки» → «Обновления».
+
+## Лицензия
+
+[Apache License 2.0](LICENSE) — как у исходного проекта ByeByeDPI.

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_proto_chip"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="58dp"
+    android:orientation="horizontal"
+    android:paddingStart="12dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="4dp"
+    android:paddingBottom="8dp">
+
+    <FrameLayout
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/bg_icon_box">
+
+        <ImageView
+            android:id="@+id/entryIcon"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            app:tint="@color/muted"
+            tools:src="@drawable/ic_k_link" />
+
+        <TextView
+            android:id="@+id/entryEmoji"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textSize="17sp"
+            android:visibility="gone"
+            tools:text="🇳🇱" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:duplicateParentState="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/entryTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/tab_text"
+            android:textSize="13.5sp"
+            android:textStyle="bold"
+            tools:text="Основной профиль" />
+
+        <TextView
+            android:id="@+id/entrySubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:fontFamily="monospace"
+            android:maxLines="2"
+            android:textColor="@color/muted"
+            android:textSize="10.5sp"
+            tools:text="подписка · 3 серв. · обновлён 12:30" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/entryCheck"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_k_check"
+        android:visibility="gone"
+        app:tint="@color/accent" />
+
+    <ImageView
+        android:id="@+id/entryAction"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="8dp"
+        android:visibility="gone"
+        app:tint="@color/muted"
+        tools:src="@drawable/ic_k_refresh" />
+
+    <ImageView
+        android:id="@+id/entryMore"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/cmd_history_menu"
+        android:padding="8dp"
+        android:src="@drawable/ic_k_more"
+        android:visibility="gone"
+        app:tint="@color/muted" />
+</LinearLayout>

@@ -3,8 +3,6 @@ package io.github.romanvht.byedpi.activities
 import android.content.Intent
 import android.net.VpnService
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
@@ -63,10 +61,21 @@ class TestActivity : BaseActivity() {
 
     private val prefs by lazy { getPreferences() }
 
+    override val useDynamicColors = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_proxy_test)
-        setupToolbar()
+
+        val topBar = DashUi.setupTopBar(this, getString(R.string.test_title))
+        topBar.addAction(R.drawable.ic_k_copy, getString(R.string.test_copy_results)) { copyLog() }
+        topBar.addAction(R.drawable.ic_k_settings, getString(R.string.test_settings)) {
+            if (!isTesting) {
+                startActivity(Intent(this, TestSettingsActivity::class.java))
+            } else {
+                Toast.makeText(this, R.string.settings_unavailable, Toast.LENGTH_SHORT).show()
+            }
+        }
 
         val ip = prefs.getStringNotNull("byedpi_proxy_ip", "127.0.0.1")
         val port = prefs.getIntStringNotNull("byedpi_proxy_port", 1080)
@@ -123,49 +132,24 @@ class TestActivity : BaseActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (isTesting) {
-                    stopTesting()
-                } else {
-                    if (appStatus.first == AppStatus.Running) {
-                        val intent = Intent(this@TestActivity, MainActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                        startActivity(intent)
-                    }
-                }
-
+                if (isTesting) stopTesting()
                 finish()
             }
         })
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        updateStartButton(testing = false)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_test, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_copy_log -> {
-                copyLog()
-                true
-            }
-            R.id.action_settings -> {
-                if (!isTesting) {
-                    val intent = Intent(this, TestSettingsActivity::class.java)
-                    startActivity(intent)
-                } else {
-                    Toast.makeText(this, R.string.settings_unavailable, Toast.LENGTH_SHORT).show()
-                }
-                true
-            }
-            android.R.id.home -> {
-                onBackPressedDispatcher.onBackPressed()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+    private fun updateStartButton(testing: Boolean) {
+        val button = startStopButton as com.google.android.material.button.MaterialButton
+        button.text = getString(if (testing) R.string.test_stop else R.string.test_start)
+        button.setIconResource(if (testing) R.drawable.ic_k_stop else R.drawable.ic_k_play)
+        val background = if (testing) R.color.panel_2 else R.color.accent
+        val foreground = if (testing) R.color.danger else R.color.bg
+        val stroke = if (testing) R.color.danger_30 else R.color.accent
+        button.backgroundTintList = android.content.res.ColorStateList.valueOf(getColor(background))
+        button.strokeColor = android.content.res.ColorStateList.valueOf(getColor(stroke))
+        button.iconTint = android.content.res.ColorStateList.valueOf(getColor(foreground))
+        button.setTextColor(getColor(foreground))
     }
 
     private suspend fun waitForProxyStatus(statusNeeded: AppStatus): Boolean {
@@ -208,7 +192,7 @@ class TestActivity : BaseActivity() {
                 disclaimerTextView.visibility = View.GONE
 
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                startStopButton.text = getString(R.string.test_stop)
+                updateStartButton(testing = true)
                 progressTextView.text = ""
 
                 strategyAdapter.setTestingState(true)
@@ -309,7 +293,7 @@ class TestActivity : BaseActivity() {
 
             withContext(Dispatchers.Main) {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                startStopButton.text = getString(R.string.test_start)
+                updateStartButton(testing = false)
                 progressTextView.text = getString(R.string.test_complete)
 
                 strategyAdapter.setTestingState(false)

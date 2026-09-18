@@ -15,6 +15,8 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
             intent.action == Intent.ACTION_REBOOT ||
             intent.action == "android.intent.action.QUICKBOOT_POWERON") {
+            // Будильники сбрасываются при перезагрузке — заодно перепланируем смену иконки
+            io.github.romanvht.byedpi.utility.LauncherIcons.update(context)
 
             // for A15, todo: use wasForceStopped
             if (SystemClock.elapsedRealtime() > 5 * 60 * 1000) {
