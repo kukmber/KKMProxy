@@ -47,6 +47,15 @@ keyPassword=...
 
 Релизы собираются GitHub Actions по тегу вида `v1.0.1`; ключ подписи берётся из секретов `KEYSTORE_BASE64` и `KEYSTORE_PASSWORD`.
 
+Обновление ядер и выпуск новой версии — по шагам в [ОБНОВЛЕНИЕ.md](ОБНОВЛЕНИЕ.md):
+
+```bash
+./scripts/update-cores.sh                        # обновить ядра
+./gradlew :app:testDebugUnitTest assembleDebug   # проверить сборку
+./scripts/install-phone.sh                       # проверить на телефоне
+./scripts/release.sh 1.0.2 "что изменилось"      # выпустить релиз
+```
+
 ## Из чего собрано
 
 - [ByeByeDPI](https://github.com/romanvht/ByeByeDPI) — приложение, на основе которого сделан проект
