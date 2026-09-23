@@ -11,10 +11,17 @@ MANUAL=""
 say()  { printf '%s\n' "$*"; }
 head2() { printf '\n== %s\n' "$*"; }
 
-# Последний релиз репозитория на GitHub
+# Последний релиз репозитория на GitHub (с повторами: бывает, что не отвечает с первого раза)
 latest_tag() {
-  curl -fsS -m 25 "https://api.github.com/repos/$1/releases/latest" 2>/dev/null \
-    | grep -m1 '"tag_name"' | cut -d'"' -f4
+  local try out
+  for try in 1 2 3; do
+    out=$(curl -fsS -m 25 -H 'User-Agent: KKMProxy' \
+      "https://api.github.com/repos/$1/releases/latest" 2>/dev/null \
+      | python3 -c "import json,sys; print(json.load(sys.stdin).get('tag_name',''))" 2>/dev/null)
+    [ -n "$out" ] && { printf '%s' "$out"; return 0; }
+    sleep 2
+  done
+  return 1
 }
 
 # Голые цифры версии для сравнения: v0.17.3 -> 0 17 3
