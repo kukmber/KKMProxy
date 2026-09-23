@@ -1,0 +1,41 @@
+name: Автовыпуск версии
+
+# Срабатывает после слияния изменений с пометкой [release] в master:
+# поднимает последнюю цифру версии и ставит тег — дальше работает release.yml
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    if: contains(github.event.head_commit.message, '[release]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Поднять версию и поставить тег
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          GRADLE=app/build.gradle.kts
+          CURRENT=$(grep -m1 'val appVersionName' "$GRADLE" | cut -d'"' -f2)
+          NEXT="${CURRENT%.*}.$(( ${CURRENT##*.} + 1 ))"
+
+          if git rev-parse "v$NEXT" >/dev/null 2>&1; then
+            echo "Тег v$NEXT уже есть, выпуск пропущен"
+            exit 0
+          fi
+
+          sed -i "s|^val appVersionName = \".*\"|val appVersionName = \"$NEXT\"|" "$GRADLE"
+          git add "$GRADLE"
+          git commit -m "Версия $NEXT"
+          git push origin master
+          git tag -a "v$NEXT" -m "KKMProxy $NEXT"
+          git push origin "v$NEXT"
+          echo "Выпущена версия $NEXT"

@@ -433,4 +433,6 @@
     <string name="updates_permission_text">Чтобы приложение могло установить обновление, разрешите ему установку приложений из неизвестных источников.</string>
     <string name="dash_set_updates">Обновления</string>
     <string name="dash_update_badge">есть новая версия</string>
+    <string name="updates_now">Обновить</string>
+    <string name="updates_later">Позже</string>
 </resources>

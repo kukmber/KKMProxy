@@ -881,6 +881,21 @@ class DashboardActivity : BaseActivity() {
             val release = withContext(Dispatchers.IO) { Updates.checkDaily(applicationContext) } ?: return@launch
             binding.updatesBadge.visibility = View.VISIBLE
             Updates.markSeen(this@DashboardActivity, release.tag)
+            if (Updates.isPostponed(this@DashboardActivity, release.tag)) return@launch
+
+            AlertDialog.Builder(this@DashboardActivity)
+                .setTitle(getString(R.string.updates_available, release.name))
+                .setMessage(release.notes.trim().take(400).ifBlank { getString(R.string.updates_no_notes) })
+                .setNegativeButton(R.string.updates_later) { _, _ ->
+                    Updates.postpone(this@DashboardActivity, release.tag)
+                }
+                .setPositiveButton(R.string.updates_now) { _, _ ->
+                    startActivity(
+                        Intent(this@DashboardActivity, UpdatesActivity::class.java)
+                            .putExtra(UpdatesActivity.EXTRA_AUTO_DOWNLOAD, true),
+                    )
+                }
+                .show()
         }
     }
 

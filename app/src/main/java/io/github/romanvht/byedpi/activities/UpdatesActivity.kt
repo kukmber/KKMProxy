@@ -120,6 +120,11 @@ class UpdatesActivity : BaseActivity() {
                 appRelease == null -> status.setText(R.string.updates_failed)
                 Updates.isNewer(appRelease.tag, Updates.currentVersion()) -> {
                     pending = appRelease
+                    // Пришли по кнопке «Обновить» — качаем сразу, без лишнего нажатия
+                    if (intent.getBooleanExtra(EXTRA_AUTO_DOWNLOAD, false)) {
+                        intent.removeExtra(EXTRA_AUTO_DOWNLOAD)
+                        download(appRelease)
+                    }
                     Updates.markSeen(this@UpdatesActivity, appRelease.tag)
                     status.text = getString(R.string.updates_available, appRelease.name)
                     notes.text = appRelease.notes.trim().ifBlank { getString(R.string.updates_no_notes) }
@@ -227,5 +232,10 @@ class UpdatesActivity : BaseActivity() {
 
     private fun openUrl(url: String) {
         runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+    }
+
+    companion object {
+        /** Начать скачивание сразу после проверки */
+        const val EXTRA_AUTO_DOWNLOAD = "auto_download"
     }
 }

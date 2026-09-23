@@ -49,13 +49,9 @@ jobs:
               m = re.search(pattern, text)
               return m.group(1) if m else default
 
+          # Ядра обновляет робот (update-cores.yml), здесь — только ручной перенос
           bundled = {
-              "MetaCubeX/mihomo": grab(gradle, r'val mihomoVersion = "([^"]+)"'),
               "Flowseal/tg-ws-proxy": grab(gradle, r'val tgwsPortedFrom = "([^"]+)"'),
-              "hufrea/byedpi": "v" + grab(
-                  byedpi_src.read_text(encoding="utf-8", errors="ignore") if byedpi_src.exists() else "",
-                  r'#define\s+VERSION\s+"([^"]+)"',
-              ),
               "romanvht/ByeByeDPI": grab(updates, r'bundled = "(v1[^"]*)"'),
           }
 
@@ -77,20 +73,17 @@ jobs:
           STALE: ${{ steps.check.outputs.stale }}
         with:
           script: |
-            const title = 'Вышли новые версии компонентов';
+            const title = 'Нужно перенести изменения из оригиналов';
             const body = [
-              'Эти компоненты обновились в оригинальных репозиториях:',
+              'В этих проектах вышли новые версии, а их изменения переносятся вручную:',
               '',
               process.env.STALE,
               '',
-              'Что делать:',
-              '```bash',
-              'cd ~/ByeByeDPI',
-              './scripts/update-cores.sh              # обновит ядра',
-              './gradlew :app:testDebugUnitTest assembleDebug',
-              './scripts/release.sh 1.0.2 "обновил ядра"',
-              '```',
-              'TgWsProxy и ByeByeDPI переносятся вручную — скрипт об этом скажет.',
+              'Как переносить — в [ОБНОВЛЕНИЕ.md](../blob/master/ОБНОВЛЕНИЕ.md),',
+              'раздел «Как переносить изменения самому».',
+              '',
+              'Ядра (ByeDPI, hev-socks5-tunnel, mihomo) обновляются сами —',
+              'для них раз в неделю открывается отдельный pull request.',
             ].join('\n');
 
             const { data: issues } = await github.rest.issues.listForRepo({

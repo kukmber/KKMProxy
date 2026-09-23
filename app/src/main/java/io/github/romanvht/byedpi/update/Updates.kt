@@ -31,6 +31,7 @@ object Updates {
     const val PREF_REPO = "update_repo"
     private const val PREF_LAST_CHECK = "update_last_check"
     private const val PREF_LAST_SEEN = "update_last_seen_tag"
+    private const val PREF_POSTPONED = "update_postponed_tag"
 
     /** Репозиторий с релизами KKMProxy; в приложении его можно заменить своим */
     const val DEFAULT_REPO = "kukmber/KKMProxy"
@@ -155,4 +156,12 @@ object Updates {
 
     fun lastSeen(context: Context): String? =
         context.getPreferences().getString(PREF_LAST_SEEN, null)
+
+    /** Про эту версию уже спрашивали и получили «позже» */
+    fun isPostponed(context: Context, tag: String): Boolean =
+        context.getPreferences().getString(PREF_POSTPONED, null) == tag
+
+    fun postpone(context: Context, tag: String) {
+        context.getPreferences().edit { putString(PREF_POSTPONED, tag) }
+    }
 }

@@ -1,0 +1,80 @@
+name: Обновление ядер
+
+# Раз в неделю обновляет встроенные ядра до свежих релизов, проверяет сборку
+# и открывает pull request. После нажатия Merge релиз выпускается сам.
+on:
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Обновить ядра
+        id: update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/update-cores.sh | tee /tmp/update.log
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+          {
+            echo 'log<<LOGEOF'
+            cat /tmp/update.log
+            echo 'LOGEOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 17
+        if: steps.update.outputs.changed == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        if: steps.update.outputs.changed == 'true'
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install NDK and CMake
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "ndk;27.0.12077973" "cmake;3.22.1" > /dev/null
+
+      - name: Проверить сборку
+        if: steps.update.outputs.changed == 'true'
+        run: ./gradlew :app:testDebugUnitTest assembleDebug --no-daemon
+
+      - name: Открыть pull request
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOG: ${{ steps.update.outputs.log }}
+        run: |
+          BRANCH="cores-update-$(date +%Y-%m-%d)"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "Обновление ядер"
+          git push -f origin "$BRANCH"
+
+          BODY=$(printf '%s\n\n%s\n%s\n%s\n\n%s\n' \
+            "Ядра обновлены до свежих версий, сборка и тесты прошли." \
+            '```' "$LOG" '```' \
+            "Перед слиянием стоит проверить сборку на телефоне: \`./scripts/install-phone.sh\`. После слияния релиз соберётся и опубликуется сам.")
+
+          # Заголовок с [release] — по нему после слияния запускается выпуск версии
+          gh pr create --title "Обновление ядер [release]" --body "$BODY" --base master --head "$BRANCH" \
+            || gh pr edit "$BRANCH" --body "$BODY"
