@@ -1,0 +1,104 @@
+name: Проверка оригиналов
+
+# Раз в неделю сверяет версии встроенных компонентов с их оригиналами
+# и заводит задачу, если что-то устарело.
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Сравнить версии
+        id: check
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, re, urllib.request, pathlib
+
+          def latest(repo):
+              try:
+                  req = urllib.request.Request(
+                      f"https://api.github.com/repos/{repo}/releases/latest",
+                      headers={"User-Agent": "KKMProxy"},
+                  )
+                  with urllib.request.urlopen(req, timeout=20) as r:
+                      return json.load(r).get("tag_name", "")
+              except Exception:
+                  return ""
+
+          def nums(v):
+              return [int(x) for x in re.findall(r"\d+", v or "")]
+
+          gradle = pathlib.Path("app/build.gradle.kts").read_text(encoding="utf-8")
+          updates = pathlib.Path(
+              "app/src/main/java/io/github/romanvht/byedpi/update/Updates.kt"
+          ).read_text(encoding="utf-8")
+          byedpi_src = pathlib.Path("app/src/main/cpp/byedpi/main.c")
+
+          def grab(text, pattern, default=""):
+              m = re.search(pattern, text)
+              return m.group(1) if m else default
+
+          bundled = {
+              "MetaCubeX/mihomo": grab(gradle, r'val mihomoVersion = "([^"]+)"'),
+              "Flowseal/tg-ws-proxy": grab(gradle, r'val tgwsPortedFrom = "([^"]+)"'),
+              "hufrea/byedpi": "v" + grab(
+                  byedpi_src.read_text(encoding="utf-8", errors="ignore") if byedpi_src.exists() else "",
+                  r'#define\s+VERSION\s+"([^"]+)"',
+              ),
+              "romanvht/ByeByeDPI": grab(updates, r'bundled = "(v1[^"]*)"'),
+          }
+
+          stale = []
+          for repo, have in bundled.items():
+              new = latest(repo)
+              if new and nums(new) > nums(have):
+                  stale.append(f"- **{repo}**: у нас `{have}`, вышла `{new}` — https://github.com/{repo}/releases")
+
+          print("stale<<EOF")
+          print("\n".join(stale))
+          print("EOF")
+          PY
+
+      - name: Завести задачу
+        if: steps.check.outputs.stale != ''
+        uses: actions/github-script@v7
+        env:
+          STALE: ${{ steps.check.outputs.stale }}
+        with:
+          script: |
+            const title = 'Вышли новые версии компонентов';
+            const body = [
+              'Эти компоненты обновились в оригинальных репозиториях:',
+              '',
+              process.env.STALE,
+              '',
+              'Что делать:',
+              '```bash',
+              'cd ~/ByeByeDPI',
+              './scripts/update-cores.sh              # обновит ядра',
+              './gradlew :app:testDebugUnitTest assembleDebug',
+              './scripts/release.sh 1.0.2 "обновил ядра"',
+              '```',
+              'TgWsProxy и ByeByeDPI переносятся вручную — скрипт об этом скажет.',
+            ].join('\n');
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              ...context.repo, state: 'open', labels: 'обновление',
+            });
+            const existing = issues.find(i => i.title === title);
+            if (existing) {
+              await github.rest.issues.update({ ...context.repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body, labels: ['обновление'] });
+            }
