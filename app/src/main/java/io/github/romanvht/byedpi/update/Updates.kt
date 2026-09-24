@@ -49,7 +49,7 @@ object Updates {
         Component(
             title = "byebyeDPI",
             repo = "romanvht/ByeByeDPI",
-            bundled = "v1.7.8",
+            bundled = "v1.7.9",
             comment = "приложение собрано на его основе",
         ),
         Component(
