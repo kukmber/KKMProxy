@@ -8,10 +8,10 @@ import java.net.InetSocketAddress
 import java.net.UnknownHostException
 import java.security.MessageDigest
 import java.security.SecureRandom
+import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.SSLSocket
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 /**
  * Minimal RFC 6455 WebSocket client implementation for binary frames.
@@ -40,17 +40,19 @@ class RawWebSocket private constructor(
 
         private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
-        // Global SSLContext — reused for all connections (matches Python's module-level _ssl_ctx)
+        // Global SSLContext — reused for all connections (matches Python's module-level _ssl_ctx).
+        // Uses the Android system trust store (Python uses certifi for the same purpose),
+        // so server certificates are verified.
         private val globalSslContext: SSLContext by lazy {
             SSLContext.getInstance("TLS").also {
-                it.init(null, arrayOf<TrustManager>(TrustAllManager()), SecureRandom())
+                it.init(null, null, null)
             }
         }
 
         /**
          * Connect to a WebSocket endpoint.
          * @param connectHost IP address or hostname to connect to (TCP level)
-         * @param domain domain name for TLS SNI and HTTP Host header
+         * @param domain domain name for TLS SNI, certificate hostname check and HTTP Host header
          * @param path WebSocket path
          * @param port TCP port
          * @param connectTimeoutMs connection timeout in milliseconds
@@ -83,6 +85,12 @@ class RawWebSocket private constructor(
 
                 socket.connect(InetSocketAddress(connectHost, port), clampedTimeout)
                 socket.startHandshake()
+
+                // Verify that the certificate was issued for the requested domain
+                // (matches Python's check_hostname=True in the default context).
+                if (!HttpsURLConnection.getDefaultHostnameVerifier().verify(domain, socket.session)) {
+                    throw SSLPeerUnverifiedException("TLS certificate does not match $domain")
+                }
             } catch (e: Exception) {
                 try { socket.close() } catch (_: Exception) {}
                 throw e
@@ -552,13 +560,4 @@ class WsHandshakeError(
 ) : Exception("WS handshake failed (HTTP $statusCode): $statusLine") {
     val isRedirect: Boolean
         get() = statusCode in listOf(301, 302, 303, 307, 308)
-}
-
-/**
- * Trust manager that accepts all certificates (matching Python's ssl.CERT_NONE).
- */
-private class TrustAllManager : X509TrustManager {
-    override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
-    override fun checkServerTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
-    override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> = emptyArray()
 }

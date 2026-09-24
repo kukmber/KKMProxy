@@ -21,7 +21,7 @@ val mihomoAbis = mapOf(
 val mihomoDir = layout.projectDirectory.dir("mihomo-bin/$mihomoVersion")
 
 // Для нового релиза достаточно поменять эту строку и поставить тег такой же версии
-val appVersionName = "1.0.1"
+val appVersionName = "1.0.2"
 
 // Номер сборки считается из версии: 1.0.1 -> 10001. Он должен только расти,
 // иначе Android не даст поставить обновление поверх установленного.
@@ -29,7 +29,7 @@ val appVersionCode = appVersionName.split('.').map { it.toIntOrNull() ?: 0 }
     .let { (it.getOrElse(0) { 0 } * 10000) + (it.getOrElse(1) { 0 } * 100) + it.getOrElse(2) { 0 } }
 
 // Версия оригинального tg-ws-proxy, с которого сделан Kotlin-порт TgWsProxy
-val tgwsPortedFrom = "v1.10.2"
+val tgwsPortedFrom = "v1.10.4"
 
 // Версия ядра ByeDPI берётся прямо из исходников подмодуля
 fun byedpiVersion(): String = file("src/main/cpp/byedpi/main.c")
