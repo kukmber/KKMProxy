@@ -75,10 +75,32 @@ except Exception:
 print('  правок всего:', d.get('total_commits', '?'))
 for c in d.get('commits', []):
     print('   -', c['commit']['message'].split(chr(10))[0][:80])
+
+# Правки, которые почти всегда можно пропустить
+noise = re.compile(r'(version|__init__|readme|changelog|\.md\$|locale|i18n)', re.I)
 files = [f for f in d.get('files', []) if not skip.search(f['filename'])]
+print()
 print('  файлы, которые нас касаются:', len(files), 'из', len(d.get('files', [])))
 for f in files:
-    print('   *', f['filename'], '(+%d -%d)' % (f['additions'], f['deletions']))
+    mark = 'мелочь' if noise.search(f['filename']) else 'смотреть'
+    print('   [%s] %s (+%d -%d)' % (mark, f['filename'], f['additions'], f['deletions']))
+
+print()
+print('  ИЗМЕНЁННЫЕ СТРОКИ (- убрали, + добавили):')
+for f in files:
+    if noise.search(f['filename']):
+        continue
+    patch = f.get('patch')
+    if not patch:
+        continue
+    print()
+    print('  --- ' + f['filename'])
+    lines = [l for l in patch.split(chr(10)) if l[:1] in '+- ' and not l.startswith(('+++', '---'))]
+    shown = [l for l in lines if l[:1] in '+-']
+    for l in shown[:30]:
+        print('   ' + l[:140])
+    if len(shown) > 30:
+        print('   ... ещё %d строк, смотри по ссылке выше' % (len(shown) - 30))
 " 2>/dev/null || echo "  не удалось получить список"
 }
 
