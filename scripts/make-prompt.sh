@@ -3,9 +3,9 @@
 # Запуск:  ./scripts/make-prompt.sh
 set -u
 cd "$(dirname "$0")/.."
+source scripts/common.sh
 
-OUT="/mnt/c/Users/$(whoami)/Downloads/kkm-задание-для-claude.txt"
-[ -d "$(dirname "$OUT")" ] || OUT="$PWD/kkm-задание-для-claude.txt"
+OUT="$KKM_OUT/kkm-задание-для-claude.txt"
 
 GRADLE=app/build.gradle.kts
 SRC=app/src/main/java/io/github/romanvht/byedpi/telegram/proxy
@@ -110,12 +110,12 @@ cat <<'EOF'
 EOF
 } > "$OUT"
 
-WIN_PATH=$(echo "$OUT" | sed 's|/mnt/c/|C:\\|; s|/|\\|g')
+WIN_PATH=$(win_path "$OUT")
 echo
 echo "Готово: $WIN_PATH"
 echo "Размер: $(wc -c < "$OUT") знаков, $(wc -l < "$OUT") строк"
 echo
 echo "Что делать:"
-echo "  1) открой файл (двойной клик), выдели всё (Ctrl+A), скопируй (Ctrl+C)"
+echo "  1) открой файл или просто приложи его в чат"
 echo "  2) вставь в новый чат с Claude"
 echo "  3) ответ принеси сюда — проверю перед тем, как менять код"

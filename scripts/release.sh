@@ -3,6 +3,7 @@
 # Запуск:  ./scripts/release.sh 1.0.2 "что изменилось"
 set -eu
 cd "$(dirname "$0")/.."
+source scripts/common.sh
 
 VERSION=${1:-}
 MESSAGE=${2:-"Обновление компонентов"}
@@ -43,3 +44,7 @@ echo "Готово. GitHub соберёт и опубликует релиз з�
 echo "  сборка: https://github.com/kukmber/KKMProxy/actions"
 echo "  релиз:  https://github.com/kukmber/KKMProxy/releases/latest"
 echo "Приложение у друзей увидит обновление в течение суток."
+
+# Собранные файлы кладём рядом, чтобы не искать их в папках проекта
+cp app/build/outputs/apk/debug/*arm64*.apk "$KKM_OUT/" 2>/dev/null && \
+  echo "Отладочная сборка скопирована в $(win_path "$KKM_OUT")"

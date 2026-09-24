@@ -4,24 +4,24 @@
 # Запуск:  ./scripts/apply-file.sh RawWebSocket.kt
 set -u
 cd "$(dirname "$0")/.."
+source scripts/common.sh
 
 NAME=${1:-}
-DOWNLOADS="/mnt/c/Users/$(whoami)/Downloads"
-PROMPT="$DOWNLOADS/kkm-исправь-ошибку.txt"
+PROMPT="$KKM_OUT/kkm-исправь-ошибку.txt"
 
 if [ -z "$NAME" ]; then
   echo "Укажите имя файла, который дал чат. Пример:"
   echo "  ./scripts/apply-file.sh RawWebSocket.kt"
   echo
-  echo "Файл должен лежать в папке «Загрузки»."
+  echo "Файл должен лежать в папке: $(win_path "$KKM_OUT")"
   exit 1
 fi
 
 NAME=$(basename "$NAME")
-NEWFILE="$DOWNLOADS/$NAME"
+NEWFILE="$KKM_OUT/$NAME"
 [ -f "$NEWFILE" ] || NEWFILE="$NAME"
 if [ ! -f "$NEWFILE" ]; then
-  echo "Не нашёл файл «$NAME» ни в Загрузках, ни в текущей папке."
+  echo "Не нашёл файл «$NAME» ни в $(win_path "$KKM_OUT"), ни в текущей папке."
   exit 1
 fi
 
@@ -82,7 +82,7 @@ echo
 echo "Ошибки:"
 echo "$ERRORS" | head -8
 echo
-WIN_PATH=$(echo "$PROMPT" | sed 's|/mnt/c/|C:\\|; s|/|\\|g')
+WIN_PATH=$(win_path "$PROMPT")
 echo "Готово новое задание для чата: $WIN_PATH"
 echo "Приложите его в тот же чат — там уже есть контекст."
 rm -f "$LOG"
