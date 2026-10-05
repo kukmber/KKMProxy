@@ -11,7 +11,7 @@ val abis = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
 // Ядро VPN — mihomo (как в FlClashX). Бинарник кладётся в APK как libmihomo.so
 // и запускается отдельным процессом из nativeLibraryDir.
-val mihomoVersion = "v1.19.31"
+val mihomoVersion = "v1.19.32"
 val mihomoAbis = mapOf(
     "arm64-v8a" to "arm64-v8",
     "armeabi-v7a" to "armv7",
