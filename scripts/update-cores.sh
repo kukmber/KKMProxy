@@ -114,10 +114,17 @@ if [ -z "$OPENFLUX_NEW" ]; then
 elif ! newer "$OPENFLUX_NEW" "$OPENFLUX_NOW"; then
   say "OpenFlux: $OPENFLUX_NOW — уже последняя"
 else
-  sed -i "s|val openfluxVersion = \"$OPENFLUX_NOW\"|val openfluxVersion = \"$OPENFLUX_NEW\"|" "$GRADLE"
-  say "OpenFlux: $OPENFLUX_NOW -> $OPENFLUX_NEW ✔"
-  say "   узлы на серверах обновляются сами (node-v…), но проверьте подключение"
-  CHANGED=1
+  OPENFLUX_PATH=app/src/main/openflux
+  git -C "$OPENFLUX_PATH" fetch --tags --quiet origin 2>/dev/null
+  if git -C "$OPENFLUX_PATH" checkout --quiet "$OPENFLUX_NEW" 2>/dev/null; then
+    git add "$OPENFLUX_PATH"
+    sed -i "s|val openfluxVersion = \"$OPENFLUX_NOW\"|val openfluxVersion = \"$OPENFLUX_NEW\"|" "$GRADLE"
+    say "OpenFlux: $OPENFLUX_NOW -> $OPENFLUX_NEW ✔"
+    say "   узлы на серверах обновляются сами (node-v…), но проверьте подключение"
+    CHANGED=1
+  else
+    say "OpenFlux: не удалось переключиться на $OPENFLUX_NEW"
+  fi
 fi
 
 head2 "Требуют ручной работы"

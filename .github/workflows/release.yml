@@ -28,6 +28,13 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # Ядро OpenFlux собирается из подмодуля; версия Go — из его go.mod
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: app/src/main/openflux/go.mod
+          cache-dependency-path: app/src/main/openflux/go.sum
+
       - name: Install NDK and CMake
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \

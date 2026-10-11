@@ -40,9 +40,9 @@ enum class VpnStatus { STOPPED, STARTING, RUNNING, STOPPING, FAILED }
  * Само приложение исключено из VPN, поэтому соединения mihomo идут напрямую.
  *
  * Узел OpenFlux — ещё один процесс (libopenflux.so): SOCKS5-клиент OpenFlux,
- * в который mihomo отправляет трафик как в socks5-узел. Имена это ядро
- * разрешает само, а на Android ему нечем (нет /etc/resolv.conf), поэтому для
- * таких узлов туннель работает без mapdns: в ядра уходят только IP-адреса,
+ * в который mihomo отправляет трафик как в socks5-узел. Имена из SOCKS это ядро
+ * разрешает само, системным DNS вне VPN (утечка и подмена провайдером), поэтому
+ * для таких узлов туннель работает без mapdns: в ядра уходят только IP-адреса,
  * а DNS-запросы приложений идут через узел обычным UDP.
  */
 class KkmVpnService : VpnService() {
@@ -275,7 +275,7 @@ class KkmVpnService : VpnService() {
         keyFile.setReadable(true, true)
 
         if (logFile.length() > 2L * 1024 * 1024) logFile.writeText("")
-        logFile.appendText("\n===== ${java.util.Date()} OpenFlux ${link.directDial} =====\n")
+        logFile.appendText("\n===== ${java.util.Date()} OpenFlux ${link.label} ${link.host} =====\n")
 
         val process = ProcessBuilder(listOf(binary.absolutePath) + link.clientArgs(socksPort, keyFile.absolutePath))
             .directory(dir)
@@ -313,7 +313,7 @@ class KkmVpnService : VpnService() {
             if (listening) return
             Thread.sleep(200)
         }
-        error("OpenFlux не подключился к ${link.directDial} за ${START_TIMEOUT_MS / 1000} с")
+        error("OpenFlux (${link.label}) не запустился за ${START_TIMEOUT_MS / 1000} с")
     }
 
     private fun lastOpenFluxLine(): String? = runCatching {

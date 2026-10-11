@@ -49,7 +49,7 @@ object VpnConfigParser {
             get() = when {
                 type !in SUPPORTED_TYPES -> "тип $type"
                 type == TYPE_VLESS && network !in SUPPORTED_VLESS_NETWORKS -> "транспорт $network"
-                type == TYPE_OPENFLUX && openFlux?.directDial == null -> "OpenFlux без direct"
+                type == TYPE_OPENFLUX && openFlux?.supported.isNullOrEmpty() -> "OpenFlux: нужен direct или Mail.ru"
                 else -> null
             }
 
@@ -284,7 +284,7 @@ object VpnConfigParser {
     /** openflux://v1/... — узел, который поднимает собственный процесс ядра OpenFlux */
     private fun parseOpenFlux(link: String): VpnNode? {
         val config = OpenFluxLink.parse(link) ?: return null
-        val server = config.host.ifBlank { config.transports.firstOrNull() ?: "openflux" }
+        val server = config.host.ifBlank { config.transports.firstOrNull()?.type ?: "openflux" }
         // Имя после # (как у vless/hysteria2) важнее имени канала внутри ссылки
         val name = decode(link.substringAfter('#', "")).trim()
             .ifBlank { config.name }
@@ -294,7 +294,7 @@ object VpnConfigParser {
             "type" to TYPE_OPENFLUX,
             "server" to server,
             "port" to config.port,
-            "network" to (if (config.directDial != null) "direct" else config.transports.joinToString("+")),
+            "network" to config.label.ifBlank { config.transports.joinToString("+") { it.type } },
             OPENFLUX_LINK_KEY to link,
         )
         return VpnNode(name, TYPE_OPENFLUX, server, config.port, raw)

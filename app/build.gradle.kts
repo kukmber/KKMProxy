@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.security.MessageDigest
 import java.util.Properties
 import java.util.zip.GZIPInputStream
 
@@ -21,18 +20,23 @@ val mihomoAbis = mapOf(
 )
 val mihomoDir = layout.projectDirectory.dir("mihomo-bin/$mihomoVersion")
 
-// Ядро OpenFlux — готовые Linux-бинарники из релизов автора (статические, на Android
-// запускаются как есть). Кладётся в APK как libopenflux.so. Для x86 сборки нет.
-val openfluxVersion = "v0.5.0"
+// Ядро OpenFlux собирается из подмодуля src/main/openflux через NDK, как в
+// build_android.sh автора: только такой бинарник резолвит имена на Android
+// (нужно транспортам через документы). Кладётся в APK как libopenflux.so.
+// Версия должна совпадать с тегом подмодуля — update-cores.sh меняет обе.
+val openfluxVersion = "v0.5.1"
+val openfluxSrc = layout.projectDirectory.dir("src/main/openflux")
+// ABI -> GOARCH и префикс компилятора NDK
 val openfluxAbis = mapOf(
-    "arm64-v8a" to "arm64",
-    "armeabi-v7a" to "arm",
-    "x86_64" to "amd64",
+    "arm64-v8a" to ("arm64" to "aarch64-linux-android"),
+    "armeabi-v7a" to ("arm" to "armv7a-linux-androideabi"),
+    "x86" to ("386" to "i686-linux-android"),
+    "x86_64" to ("amd64" to "x86_64-linux-android"),
 )
-val openfluxDir = layout.projectDirectory.dir("openflux-bin/$openfluxVersion")
+val openfluxDir = layout.buildDirectory.dir("openflux")
 
 // Для нового релиза достаточно поменять эту строку и поставить тег такой же версии
-val appVersionName = "1.0.4"
+val appVersionName = "1.0.5"
 
 // Номер сборки считается из версии: 1.0.1 -> 10001. Он должен только расти,
 // иначе Android не даст поставить обновление поверх установленного.
@@ -242,39 +246,49 @@ val downloadMihomo by tasks.registering {
     }
 }
 
-val downloadOpenflux by tasks.registering {
+// Go берётся из PATH или переменной GO; нужную версию из go.mod он скачает сам (GOTOOLCHAIN=auto)
+fun goBinary(): String = System.getenv("GO")
+    ?: listOf("/usr/local/go/bin/go", "${System.getProperty("user.home")}/go/bin/go")
+        .firstOrNull { File(it).canExecute() }
+    ?: "go"
+
+val buildOpenflux by tasks.registering {
     group = "build"
-    description = "Скачивает OpenFlux $openfluxVersion и сверяет SHA-256 с SHA256SUMS.txt релиза"
-    val targetDir = openfluxDir.asFile
+    description = "Собирает ядро OpenFlux $openfluxVersion под все ABI через NDK"
+    val src = openfluxSrc.asFile
+    inputs.files(fileTree(src) { include("**/*.go", "go.mod", "go.sum") })
+    val targetDir = openfluxDir.get().asFile
     outputs.dir(targetDir)
     doLast {
-        val base = "https://github.com/p1neappleXpress/OpenFlux/releases/download/$openfluxVersion"
-        val sums by lazy {
-            uri("$base/SHA256SUMS.txt").toURL().readText().lines()
-                .mapNotNull { line ->
-                    val parts = line.trim().split(Regex("\\s+"))
-                    if (parts.size == 2) parts[1].removePrefix("*") to parts[0].lowercase() else null
-                }
-                .toMap()
+        if (!File(src, "go.mod").exists()) {
+            error("Нет исходников OpenFlux: git submodule update --init app/src/main/openflux")
         }
-        openfluxAbis.forEach { (abi, arch) ->
-            val target = File(targetDir, "$abi/libopenflux.so")
-            if (target.exists() && target.length() > 0) return@forEach
-            target.parentFile.mkdirs()
-            val asset = "openflux-linux-$arch"
-            val expected = sums[asset] ?: error("$asset нет в SHA256SUMS.txt релиза $openfluxVersion")
-            logger.lifecycle("Downloading $base/$asset")
-            val tmp = File(target.path + ".part")
-            uri("$base/$asset").toURL().openStream().use { input ->
-                tmp.outputStream().use { input.copyTo(it) }
+        val hostTag = if (System.getProperty("os.name").startsWith("Mac")) "darwin-x86_64" else "linux-x86_64"
+        val toolchain = File(android.ndkDirectory, "toolchains/llvm/prebuilt/$hostTag/bin")
+        val minSdk = android.defaultConfig.minSdk ?: 23
+        openfluxAbis.forEach { (abi, target) ->
+            val (goArch, clangPrefix) = target
+            val output = File(targetDir, "$abi/libopenflux.so")
+            output.parentFile.mkdirs()
+            logger.lifecycle("OpenFlux $openfluxVersion -> $abi")
+            val build = providers.exec {
+                isIgnoreExitValue = true
+                workingDir = src
+                environment("GOOS", "android")
+                environment("GOARCH", goArch)
+                if (goArch == "arm") environment("GOARM", "7")
+                environment("CGO_ENABLED", "1")
+                environment("CC", File(toolchain, "$clangPrefix$minSdk-clang").absolutePath)
+                environment("GOTOOLCHAIN", "auto")
+                commandLine(
+                    goBinary(), "build", "-trimpath", "-buildvcs=false",
+                    "-ldflags=-s -w -checklinkname=0",
+                    "-o", output.absolutePath, ".",
+                )
             }
-            val actual = MessageDigest.getInstance("SHA-256")
-                .digest(tmp.readBytes()).joinToString("") { "%02x".format(it) }
-            if (actual != expected) {
-                tmp.delete()
-                error("$asset: SHA-256 не совпадает ($actual вместо $expected)")
+            if (build.result.get().exitValue != 0) {
+                error("go build для $abi не прошёл:\n" + build.standardError.asText.get())
             }
-            tmp.renameTo(target)
         }
     }
 }
@@ -282,5 +296,5 @@ val downloadOpenflux by tasks.registering {
 tasks.preBuild {
     dependsOn("runNdkBuild")
     dependsOn(downloadMihomo)
-    dependsOn(downloadOpenflux)
+    dependsOn(buildOpenflux)
 }

@@ -13,7 +13,7 @@ object MihomoApi {
     private val TEST_URLS = listOf(
         "https://www.gstatic.com/generate_204",
         "https://cp.cloudflare.com/generate_204",
-        // По IP: узлы OpenFlux не умеют резолвить имена на телефоне
+        // По IP — на случай, если имена не резолвятся (узлы OpenFlux без mapdns)
         "http://1.1.1.1/cdn-cgi/trace",
     )
 

@@ -48,6 +48,13 @@ jobs:
         if: steps.update.outputs.changed == 'true'
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Set up Go
+        if: steps.update.outputs.changed == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: app/src/main/openflux/go.mod
+          cache-dependency-path: app/src/main/openflux/go.sum
+
       - name: Install NDK and CMake
         if: steps.update.outputs.changed == 'true'
         run: |

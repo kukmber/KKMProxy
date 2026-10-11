@@ -117,6 +117,7 @@ class VpnConfigParserTest {
         assertEquals("203.0.113.10:20000", link.directDial)
 
         val args = link.clientArgs(1080, "/k")
+        assertTrue("--transport=direct" in args)
         assertTrue("--direct-dial=203.0.113.10:20000" in args)
         assertTrue("--encryption-key-file=/k" in args)
         assertTrue("--negotiate" in args)
@@ -127,6 +128,30 @@ class VpnConfigParserTest {
         assertEquals("203.0.113.10", node.server)
         assertEquals(20000, node.port)
         assertTrue(node.isSupported)
+    }
+
+    // Mail.ru (приоритет 90) + direct (50), контекст — ссылка на документ
+    private val openFluxMailru =
+        "openflux://v1/nM5BSjQxFATgu9Q6dF66__l1shMREREPIC7SScaJpJPw-gUchr67jAvBpS6Lgq_qjOKWCIuFoVDiW5XkJMIK96iwRs9RYEFmnP7t_l9d793sQzz8NkPB1yLx44IdRdpqtfa59jAsLuWBu259zsnrm_k23B3uj0Y_vD_mp_LcRigIu7K2yrLCvpwhp_Z12qXMHQqd89_cxqlykhPsnjb1DYfE0cuPfkcKIbnLzkjTQIMx02DIjkRE2F63zwAAAP__"
+
+    @Test
+    fun openFluxMailruWithDirectBackup() {
+        val mailru = "https://cloud.mail.ru/public/AbCdEfGh1/IjKlMnOp2"
+        val link = OpenFluxLink.parse(openFluxMailru)!!
+        assertEquals(mailru, link.context)
+        assertEquals("mailru+direct", link.label)
+
+        val args = link.clientArgs(1080, "/k")
+        assertTrue("--transports=mailru:90,direct:50" in args)
+        assertTrue("--mailru-url=$mailru" in args)
+        assertTrue("--direct-dial=203.0.113.10:20000" in args)
+        assertTrue("--url=$mailru" in args)
+        assertFalse(args.any { it.startsWith("--transport=") })
+
+        val node = VpnConfigParser.parse(openFluxMailru).single()
+        assertTrue(node.isSupported)
+        assertEquals("203.0.113.10", node.server)
+        assertEquals("mailru+direct", node.network)
     }
 
     @Test
