@@ -28,8 +28,12 @@ object VpnConfigParser {
 
     const val TYPE_HYSTERIA2 = "hysteria2"
     const val TYPE_VLESS = "vless"
+    const val TYPE_OPENFLUX = "openflux"
 
-    private val SUPPORTED_TYPES = setOf(TYPE_HYSTERIA2, TYPE_VLESS)
+    /** Ключ узла OpenFlux с исходной ссылкой (в mihomo он не попадает) */
+    const val OPENFLUX_LINK_KEY = "openflux-link"
+
+    private val SUPPORTED_TYPES = setOf(TYPE_HYSTERIA2, TYPE_VLESS, TYPE_OPENFLUX)
     private val SUPPORTED_VLESS_NETWORKS = setOf("tcp", "ws", "grpc", "h2", "http", "xhttp")
 
     /** Один узел подписки в Clash-формате (ключи как в YAML mihomo). */
@@ -45,10 +49,15 @@ object VpnConfigParser {
             get() = when {
                 type !in SUPPORTED_TYPES -> "тип $type"
                 type == TYPE_VLESS && network !in SUPPORTED_VLESS_NETWORKS -> "транспорт $network"
+                type == TYPE_OPENFLUX && openFlux?.directDial == null -> "OpenFlux без direct"
                 else -> null
             }
 
         val isSupported: Boolean get() = unsupportedReason == null
+
+        /** Настройки узла OpenFlux из его ссылки */
+        val openFlux: OpenFluxLink?
+            get() = (rawYaml[OPENFLUX_LINK_KEY] as? String)?.let { runCatching { OpenFluxLink.parse(it) }.getOrNull() }
 
         val network: String
             get() = (rawYaml["network"] as? String)?.lowercase()?.ifBlank { null } ?: "tcp"
@@ -139,7 +148,7 @@ object VpnConfigParser {
     private fun looksLikeLinks(text: String) =
         text.lineSequence().any { line -> URI_SCHEMES.any { line.trim().startsWith(it, ignoreCase = true) } }
 
-    private val URI_SCHEMES = listOf("vless://", "hysteria2://", "hy2://")
+    private val URI_SCHEMES = listOf("vless://", "hysteria2://", "hy2://", OpenFluxLink.SCHEME)
 
     private fun decodeBase64(text: String): String? {
         val compact = text.filterNot { it.isWhitespace() }
@@ -177,6 +186,7 @@ object VpnConfigParser {
         val type = when (link.substring(0, schemeEnd).lowercase()) {
             "vless" -> TYPE_VLESS
             "hysteria2", "hy2" -> TYPE_HYSTERIA2
+            "openflux" -> return parseOpenFlux(link)
             else -> return null
         }
 
@@ -271,6 +281,25 @@ object VpnConfigParser {
         return VpnNode(nodeName, type, host, portNumber, raw)
     }
 
+    /** openflux://v1/... — узел, который поднимает собственный процесс ядра OpenFlux */
+    private fun parseOpenFlux(link: String): VpnNode? {
+        val config = OpenFluxLink.parse(link) ?: return null
+        val server = config.host.ifBlank { config.transports.firstOrNull() ?: "openflux" }
+        // Имя после # (как у vless/hysteria2) важнее имени канала внутри ссылки
+        val name = decode(link.substringAfter('#', "")).trim()
+            .ifBlank { config.name }
+            .ifBlank { "OpenFlux $server" }
+        val raw = linkedMapOf<String, Any?>(
+            "name" to name,
+            "type" to TYPE_OPENFLUX,
+            "server" to server,
+            "port" to config.port,
+            "network" to (if (config.directDial != null) "direct" else config.transports.joinToString("+")),
+            OPENFLUX_LINK_KEY to link,
+        )
+        return VpnNode(name, TYPE_OPENFLUX, server, config.port, raw)
+    }
+
     private fun wsOpts(path: String?, host: String?, upgrade: Boolean) = linkedMapOf<String, Any?>(
         "path" to (path ?: "/"),
     ).apply {
@@ -283,7 +312,8 @@ object VpnConfigParser {
 
     // ------------------------------------------------------------------ mihomo
 
-    data class CorePorts(val mixed: Int, val controller: Int, val secret: String)
+    /** [openflux] — SOCKS5 ядра OpenFlux, 0 если выбран не OpenFlux-узел */
+    data class CorePorts(val mixed: Int, val controller: Int, val secret: String, val openflux: Int = 0)
 
     private const val PROBE_RULE = "IP-CIDR,127.0.0.1/32,DIRECT,no-resolve"
 
@@ -357,10 +387,12 @@ object VpnConfigParser {
                 config["rules"] = mutableListOf("MATCH,${node.name}")
             }
         } else {
-            // Все узлы профиля (для замера пинга), трафик — через выбранный
-            val others = parse(content).filter { it.isSupported && it.name != node.name }
+            // Все узлы профиля (для замера пинга), трафик — через выбранный.
+            // Узлы OpenFlux без своего запущенного ядра работать не могут — их не добавляем
+            val others = parse(content)
+                .filter { it.isSupported && it.name != node.name && it.type != TYPE_OPENFLUX }
                 .distinctBy { it.name }
-            proxies = (listOf(node) + others).map { LinkedHashMap(it.rawYaml) }.toMutableList()
+            proxies = (listOf(node) + others).map { mihomoProxy(it, ports) }.toMutableList()
             config["mode"] = "rule"
             config["proxies"] = proxies
             config["rules"] = mutableListOf("MATCH,${node.name}")
@@ -394,6 +426,19 @@ object VpnConfigParser {
             splitLines = false
         }
         return MihomoConfig(Yaml(options).dump(config), providers)
+    }
+
+    /** Узел в виде для mihomo: OpenFlux — это его локальный SOCKS5 */
+    private fun mihomoProxy(node: VpnNode, ports: CorePorts): MutableMap<String, Any?> {
+        if (node.type != TYPE_OPENFLUX) return LinkedHashMap(node.rawYaml)
+        require(ports.openflux > 0) { "Ядро OpenFlux не запущено" }
+        return linkedMapOf(
+            "name" to node.name,
+            "type" to "socks5",
+            "server" to "127.0.0.1",
+            "port" to ports.openflux,
+            "udp" to true,
+        )
     }
 
     /**

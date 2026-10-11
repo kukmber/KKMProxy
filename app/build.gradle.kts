@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.security.MessageDigest
 import java.util.Properties
 import java.util.zip.GZIPInputStream
 
@@ -19,6 +20,16 @@ val mihomoAbis = mapOf(
     "x86_64" to "amd64",
 )
 val mihomoDir = layout.projectDirectory.dir("mihomo-bin/$mihomoVersion")
+
+// Ядро OpenFlux — готовые Linux-бинарники из релизов автора (статические, на Android
+// запускаются как есть). Кладётся в APK как libopenflux.so. Для x86 сборки нет.
+val openfluxVersion = "v0.5.0"
+val openfluxAbis = mapOf(
+    "arm64-v8a" to "arm64",
+    "armeabi-v7a" to "arm",
+    "x86_64" to "amd64",
+)
+val openfluxDir = layout.projectDirectory.dir("openflux-bin/$openfluxVersion")
 
 // Для нового релиза достаточно поменять эту строку и поставить тег такой же версии
 val appVersionName = "1.0.3"
@@ -80,6 +91,7 @@ android {
     // Версии встроенных компонентов — показываются на экране обновлений
     defaultConfig {
         buildConfigField("String", "MIHOMO_VERSION", "\"$mihomoVersion\"")
+        buildConfigField("String", "OPENFLUX_VERSION", "\"$openfluxVersion\"")
         buildConfigField("String", "BYEDPI_VERSION", "\"v${byedpiVersion()}\"")
         buildConfigField("String", "TGWS_VERSION", "\"$tgwsPortedFrom\"")
     }
@@ -141,6 +153,7 @@ android {
     sourceSets {
         getByName("main") {
             jniLibs.srcDir(mihomoDir)
+            jniLibs.srcDir(openfluxDir)
         }
     }
 
@@ -229,7 +242,45 @@ val downloadMihomo by tasks.registering {
     }
 }
 
+val downloadOpenflux by tasks.registering {
+    group = "build"
+    description = "Скачивает OpenFlux $openfluxVersion и сверяет SHA-256 с SHA256SUMS.txt релиза"
+    val targetDir = openfluxDir.asFile
+    outputs.dir(targetDir)
+    doLast {
+        val base = "https://github.com/p1neappleXpress/OpenFlux/releases/download/$openfluxVersion"
+        val sums by lazy {
+            uri("$base/SHA256SUMS.txt").toURL().readText().lines()
+                .mapNotNull { line ->
+                    val parts = line.trim().split(Regex("\\s+"))
+                    if (parts.size == 2) parts[1].removePrefix("*") to parts[0].lowercase() else null
+                }
+                .toMap()
+        }
+        openfluxAbis.forEach { (abi, arch) ->
+            val target = File(targetDir, "$abi/libopenflux.so")
+            if (target.exists() && target.length() > 0) return@forEach
+            target.parentFile.mkdirs()
+            val asset = "openflux-linux-$arch"
+            val expected = sums[asset] ?: error("$asset нет в SHA256SUMS.txt релиза $openfluxVersion")
+            logger.lifecycle("Downloading $base/$asset")
+            val tmp = File(target.path + ".part")
+            uri("$base/$asset").toURL().openStream().use { input ->
+                tmp.outputStream().use { input.copyTo(it) }
+            }
+            val actual = MessageDigest.getInstance("SHA-256")
+                .digest(tmp.readBytes()).joinToString("") { "%02x".format(it) }
+            if (actual != expected) {
+                tmp.delete()
+                error("$asset: SHA-256 не совпадает ($actual вместо $expected)")
+            }
+            tmp.renameTo(target)
+        }
+    }
+}
+
 tasks.preBuild {
     dependsOn("runNdkBuild")
     dependsOn(downloadMihomo)
+    dependsOn(downloadOpenflux)
 }

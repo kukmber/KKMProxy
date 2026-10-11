@@ -100,6 +100,65 @@ class VpnConfigParserTest {
         assertEquals("IP-CIDR,127.0.0.1/32,DIRECT,no-resolve", (config["rules"] as List<*>).first())
     }
 
+    // Собраны самим ядром: openflux --make-link (ключ фиктивный)
+    private val openFluxDirect =
+        "openflux://v1/lM5NCsIwFEXhvVynoX1p_X1bEQcxfWpB05JcQSndu2QJDs_k8C1I4WVQ0ArhkOw-cQw0KPPbHIrFbIRCfNdvd_vD8RSucbDbvw2HOCXap84e5Kxtu4EDc0hlnjIL9LyA37lyhjFbrKBhDE8oOukbabzvGy_aiYhgvay_AAAA__8"
+    private val openFluxYandexOnly =
+        "openflux://v1/lMzLCsIwEEbhd_nXoeP9Mq8iLmIyYlHSMDOFlNJ3F3EvuDxw-GaYJBUHY7XebHf7w_F0jreU5f5vIyANxaV9sId7NSbKvT27KZYsrdORemoIcI3F6qBu4MsMn6qA8b0QMOrrt7Bcl3cAAAD__w"
+    private val openFluxKey = "0123456789abcdef".repeat(4)
+
+    @Test
+    fun parsesOpenFluxLink() {
+        val link = OpenFluxLink.parse(openFluxDirect)!!
+        assertEquals("test", link.name)
+        assertEquals(openFluxKey, link.secret)
+        assertEquals("http://#", link.context)
+        assertTrue(link.negotiate)
+        assertEquals("203.0.113.10:20000", link.directDial)
+
+        val args = link.clientArgs(1080, "/k")
+        assertTrue("--direct-dial=203.0.113.10:20000" in args)
+        assertTrue("--encryption-key-file=/k" in args)
+        assertTrue("--negotiate" in args)
+        assertTrue("--socks5=127.0.0.1:1080" in args)
+
+        val node = VpnConfigParser.parse(openFluxDirect).single()
+        assertEquals(VpnConfigParser.TYPE_OPENFLUX, node.type)
+        assertEquals("203.0.113.10", node.server)
+        assertEquals(20000, node.port)
+        assertTrue(node.isSupported)
+    }
+
+    @Test
+    fun openFluxNameFromFragment() {
+        assertEquals("🇫🇮 OpenFlux", VpnConfigParser.parse("$openFluxDirect#🇫🇮 OpenFlux").single().name)
+        assertEquals("🇫🇮 OpenFlux", VpnConfigParser.parse("$openFluxDirect#%F0%9F%87%AB%F0%9F%87%AE%20OpenFlux").single().name)
+    }
+
+    @Test
+    fun openFluxWithoutDirectIsUnsupported() {
+        val node = VpnConfigParser.parse(openFluxYandexOnly).single()
+        assertEquals(VpnConfigParser.TYPE_OPENFLUX, node.type)
+        assertFalse(node.isSupported)
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
+    fun openFluxNodeBecomesLocalSocks() {
+        val content = openFluxDirect + "\n" +
+            "hysteria2://pw@example.com:443?sni=x#hy"
+        val node = VpnConfigParser.parse(content).first { it.type == VpnConfigParser.TYPE_OPENFLUX }
+        val yaml = VpnConfigParser.buildMihomoConfig(content, node, ports.copy(openflux = 17892)).yaml
+        val config = org.yaml.snakeyaml.Yaml().load<Map<String, Any?>>(yaml)
+        val proxies = config["proxies"] as List<Map<String, Any?>>
+        val proxy = proxies.first()
+        assertEquals("socks5", proxy["type"])
+        assertEquals("127.0.0.1", proxy["server"])
+        assertEquals(17892, proxy["port"])
+        assertFalse(yaml.contains(openFluxKey))
+        assertEquals(listOf("test", "hy"), proxies.map { it["name"] })
+    }
+
     /** Пишет конфиги в MIHOMO_CHECK_DIR, чтобы проверить их бинарником mihomo. */
     @Test
     fun buildsConfigs() {

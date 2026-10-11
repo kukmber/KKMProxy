@@ -25,6 +25,8 @@ data class Component(
     val repo: String,
     val bundled: String,
     val comment: String,
+    /** Учитывать только релизы с таким началом тега (у OpenFlux рядом лежат node-v… и nightly-…) */
+    val tagPrefix: String = "",
 )
 
 object Updates {
@@ -69,6 +71,13 @@ object Updates {
             repo = "MetaCubeX/mihomo",
             bundled = BuildConfig.MIHOMO_VERSION,
             comment = "то же ядро, что во FlClashX",
+        ),
+        Component(
+            title = "Ядро OpenFlux",
+            repo = "p1neappleXpress/OpenFlux",
+            bundled = BuildConfig.OPENFLUX_VERSION,
+            comment = "клиент для узлов openflux://",
+            tagPrefix = "v",
         ),
         Component(
             title = "hev-socks5-tunnel",
@@ -118,6 +127,25 @@ object Updates {
                     apkSize = apkSize,
                     pageUrl = json.optString("html_url").ifBlank { "https://github.com/$repo/releases" },
                 )
+            }
+        }.getOrNull()
+    }
+
+    /** Последний тег оригинала компонента, null — если сеть недоступна. Не в главном потоке. */
+    fun latestTag(component: Component): String? {
+        if (component.tagPrefix.isEmpty()) return latestRelease(component.repo)?.tag
+        val request = Request.Builder()
+            .url("https://api.github.com/repos/${component.repo}/releases?per_page=30")
+            .header("Accept", "application/vnd.github+json")
+            .header("User-Agent", "KKMProxy")
+            .build()
+        return runCatching {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@use null
+                val releases = org.json.JSONArray(response.body?.string().orEmpty())
+                (0 until releases.length()).map { releases.getJSONObject(it) }
+                    .firstOrNull { !it.optBoolean("prerelease") && it.optString("tag_name").startsWith(component.tagPrefix) }
+                    ?.optString("tag_name")
             }
         }.getOrNull()
     }

@@ -38,6 +38,12 @@ enum class VpnStatus { STOPPED, STARTING, RUNNING, STOPPING, FAILED }
  * DNS разбирает сам hev (mapdns): приложения получают подменные адреса, а в
  * mihomo уходят доменные имена — их резолвит уже сервер VPN.
  * Само приложение исключено из VPN, поэтому соединения mihomo идут напрямую.
+ *
+ * Узел OpenFlux — ещё один процесс (libopenflux.so): SOCKS5-клиент OpenFlux,
+ * в который mihomo отправляет трафик как в socks5-узел. Имена это ядро
+ * разрешает само, а на Android ему нечем (нет /etc/resolv.conf), поэтому для
+ * таких узлов туннель работает без mapdns: в ядра уходят только IP-адреса,
+ * а DNS-запросы приложений идут через узел обычным UDP.
  */
 class KkmVpnService : VpnService() {
 
@@ -56,6 +62,9 @@ class KkmVpnService : VpnService() {
         private const val MAPDNS_ADDRESS = "198.18.0.2"
         private const val MAPDNS_NETWORK = "198.18.0.0"
         private const val MAPDNS_NETMASK = "255.254.0.0"
+
+        // DNS для узлов OpenFlux: запросы уходят через узел и резолвятся уже за ним
+        private val TUNNEL_DNS = listOf("1.1.1.1", "8.8.8.8")
         private const val TUN_MTU = 8500
         private const val HEALTH_TIMEOUT_MS = 10_000
         private const val HEALTH_FAILURES = 3
@@ -94,6 +103,7 @@ class KkmVpnService : VpnService() {
     }
 
     private var coreProcess: Process? = null
+    private var openFluxProcess: Process? = null
     private var tunFd: ParcelFileDescriptor? = null
     private var tunnelStarted = false
 
@@ -151,7 +161,19 @@ class KkmVpnService : VpnService() {
             val profile = ProfileStore.get(this, profileId) ?: error("Профиль не найден")
             val node = profile.nodes.firstOrNull { it.name == nodeName } ?: error("Сервер «$nodeName» не найден")
 
-            val ports = VpnConfigParser.CorePorts(freePort(), freePort(), UUID.randomUUID().toString())
+            val openFlux = if (node.type == VpnConfigParser.TYPE_OPENFLUX) {
+                node.openFlux ?: error("Не удалось разобрать ссылку OpenFlux")
+            } else {
+                null
+            }
+            val ports = VpnConfigParser.CorePorts(
+                freePort(),
+                freePort(),
+                UUID.randomUUID().toString(),
+                openflux = if (openFlux != null) freePort() else 0,
+            )
+            killStaleCore()
+            if (openFlux != null) startOpenFlux(openFlux, ports.openflux)
             var config = VpnConfigParser.buildMihomoConfig(profile.content, node, ports)
             val missing = prefetchProviders(config.providers)
             if (missing.isNotEmpty()) {
@@ -163,7 +185,7 @@ class KkmVpnService : VpnService() {
             startCore(configFile)
             corePorts = ports
             waitForCore(ports)
-            startTunnel(ports.mixed)
+            startTunnel(ports.mixed, mapDns = openFlux == null)
 
             activeNodeName = node.name
             _state.value = VpnStatus.RUNNING
@@ -204,7 +226,6 @@ class KkmVpnService : VpnService() {
     }
 
     private fun startCore(configFile: File) {
-        killStaleCore()
         val binary = File(applicationInfo.nativeLibraryDir, "libmihomo.so")
         if (!binary.exists()) error("Ядро mihomo не найдено в APK")
 
@@ -238,6 +259,67 @@ class KkmVpnService : VpnService() {
             }
         }
     }
+
+    /**
+     * Запускает клиент OpenFlux и ждёт, пока он поднимет SOCKS5. Его вывод идёт
+     * в тот же журнал, что и у mihomo, с пометкой [openflux].
+     */
+    private fun startOpenFlux(link: OpenFluxLink, socksPort: Int) {
+        val binary = File(applicationInfo.nativeLibraryDir, "libopenflux.so")
+        if (!binary.exists()) error("Ядро OpenFlux не найдено в APK (для этого процессора его нет)")
+
+        val dir = File(filesDir, "openflux").apply { mkdirs() }
+        val keyFile = File(dir, "secret.key")
+        keyFile.writeText(link.secret)
+        keyFile.setReadable(false, false)
+        keyFile.setReadable(true, true)
+
+        if (logFile.length() > 2L * 1024 * 1024) logFile.writeText("")
+        logFile.appendText("\n===== ${java.util.Date()} OpenFlux ${link.directDial} =====\n")
+
+        val process = ProcessBuilder(listOf(binary.absolutePath) + link.clientArgs(socksPort, keyFile.absolutePath))
+            .directory(dir)
+            .redirectErrorStream(true)
+            .apply { environment()["HOME"] = dir.absolutePath }
+            .start()
+        openFluxProcess = process
+        pidOf(process)?.let { File(workDir, "openflux.pid").writeText(it.toString()) }
+
+        thread(name = "openflux-log", isDaemon = true) {
+            runCatching {
+                logFile.appendingWriter().use { writer ->
+                    process.inputStream.bufferedReader().forEachLine { line ->
+                        writer.write("[openflux] ")
+                        writer.write(line)
+                        writer.write("\n")
+                        writer.flush()
+                    }
+                }
+            }
+            val code = runCatching { process.waitFor() }.getOrDefault(-1)
+            if (!stopping && openFluxProcess === process) {
+                Log.e(TAG, "openflux завершился с кодом $code")
+                _lastError.value = lastOpenFluxLine() ?: "ядро OpenFlux завершилось (код $code)"
+                scope.launch { stopVpn(stopService = true, failed = true) }
+            }
+        }
+
+        val deadline = System.currentTimeMillis() + START_TIMEOUT_MS
+        while (System.currentTimeMillis() < deadline) {
+            if (!process.isAliveCompat()) error(lastOpenFluxLine() ?: "ядро OpenFlux не запустилось")
+            val listening = runCatching {
+                Socket().use { it.connect(InetSocketAddress("127.0.0.1", socksPort), 300) }
+            }.isSuccess
+            if (listening) return
+            Thread.sleep(200)
+        }
+        error("OpenFlux не подключился к ${link.directDial} за ${START_TIMEOUT_MS / 1000} с")
+    }
+
+    private fun lastOpenFluxLine(): String? = runCatching {
+        logFile.readLines().takeLast(20).lastOrNull { it.startsWith("[openflux]") }
+            ?.removePrefix("[openflux]")?.trim()?.takeIf { it.isNotBlank() }
+    }.getOrNull()
 
     private fun File.appendingWriter() = java.io.FileWriter(this, true).buffered()
 
@@ -381,7 +463,7 @@ class KkmVpnService : VpnService() {
         }
     }
 
-    private fun startTunnel(socksPort: Int) {
+    private fun startTunnel(socksPort: Int, mapDns: Boolean) {
         val tunnelConfig = buildString {
             appendLine("tunnel:")
             appendLine("  mtu: $TUN_MTU")
@@ -389,12 +471,14 @@ class KkmVpnService : VpnService() {
             appendLine("  address: 127.0.0.1")
             appendLine("  port: $socksPort")
             appendLine("  udp: udp")
-            appendLine("mapdns:")
-            appendLine("  address: $MAPDNS_ADDRESS")
-            appendLine("  port: 53")
-            appendLine("  network: $MAPDNS_NETWORK")
-            appendLine("  netmask: $MAPDNS_NETMASK")
-            appendLine("  cache-size: 10000")
+            if (mapDns) {
+                appendLine("mapdns:")
+                appendLine("  address: $MAPDNS_ADDRESS")
+                appendLine("  port: 53")
+                appendLine("  network: $MAPDNS_NETWORK")
+                appendLine("  netmask: $MAPDNS_NETMASK")
+                appendLine("  cache-size: 10000")
+            }
             appendLine("misc:")
             appendLine("  task-stack-size: 81920")
         }
@@ -405,7 +489,9 @@ class KkmVpnService : VpnService() {
             .setMtu(TUN_MTU)
             .addAddress("172.19.0.1", 30)
             .addRoute("0.0.0.0", 0)
-            .addDnsServer(MAPDNS_ADDRESS)
+            .apply {
+                if (mapDns) addDnsServer(MAPDNS_ADDRESS) else TUNNEL_DNS.forEach { addDnsServer(it) }
+            }
             // IPv6 тоже заворачиваем в туннель, чтобы не было утечек мимо VPN
             .addAddress("fdfe:dcba:9876::1", 126)
             .addRoute("::", 0)
@@ -450,6 +536,15 @@ class KkmVpnService : VpnService() {
         coreProcess = null
         File(workDir, "core.pid").delete()
 
+        openFluxProcess?.let { process ->
+            process.destroy()
+            val deadline = System.currentTimeMillis() + 2_000
+            while (process.isAliveCompat() && System.currentTimeMillis() < deadline) Thread.sleep(50)
+            if (process.isAliveCompat()) pidOf(process)?.let { android.os.Process.killProcess(it) }
+        }
+        openFluxProcess = null
+        File(workDir, "openflux.pid").delete()
+
         if (stopService) {
             _state.value = if (failed) VpnStatus.FAILED else VpnStatus.STOPPED
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -463,6 +558,8 @@ class KkmVpnService : VpnService() {
         runCatching { tunFd?.close() }
         coreProcess?.destroy()
         coreProcess = null
+        openFluxProcess?.destroy()
+        openFluxProcess = null
         corePorts = null
         activeNodeName = null
         if (_state.value != VpnStatus.FAILED) _state.value = VpnStatus.STOPPED
@@ -474,10 +571,15 @@ class KkmVpnService : VpnService() {
 
     /** Ядро, оставшееся от прошлого запуска (например, после падения приложения) */
     private fun killStaleCore() {
-        val pidFile = File(workDir, "core.pid")
+        killStale("core.pid", "libmihomo")
+        killStale("openflux.pid", "libopenflux")
+    }
+
+    private fun killStale(pidName: String, binaryName: String) {
+        val pidFile = File(workDir, pidName)
         val pid = pidFile.takeIf { it.exists() }?.readText()?.trim()?.toIntOrNull() ?: return
         val cmdline = runCatching { File("/proc/$pid/cmdline").readText() }.getOrNull()
-        if (cmdline?.contains("libmihomo") == true) android.os.Process.killProcess(pid)
+        if (cmdline?.contains(binaryName) == true) android.os.Process.killProcess(pid)
         pidFile.delete()
     }
 

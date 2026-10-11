@@ -319,7 +319,8 @@
                     <LinearLayout
                         android:id="@+id/protocolHysteria"
                         style="@style/Dash.ProtoChip"
-                        android:layout_marginStart="5dp">
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp">
 
                         <ImageView
                             android:layout_width="16dp"
@@ -336,6 +337,30 @@
                             android:duplicateParentState="true"
                             android:fontFamily="monospace"
                             android:text="Hysteria2"
+                            android:textColor="@color/tab_text"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/protocolOpenFlux"
+                        style="@style/Dash.ProtoChip"
+                        android:layout_marginStart="5dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginEnd="8dp"
+                            android:duplicateParentState="true"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_k_link"
+                            app:tint="@color/tab_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="monospace"
+                            android:text="OpenFlux"
                             android:textColor="@color/tab_text"
                             android:textSize="13sp" />
                     </LinearLayout>

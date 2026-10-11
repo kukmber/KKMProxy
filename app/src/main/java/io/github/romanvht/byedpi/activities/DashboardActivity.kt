@@ -455,10 +455,20 @@ class DashboardActivity : BaseActivity() {
             }
             result.onSuccess {
                 toast(getString(R.string.dash_profile_added, it.name))
+                switchProtocolIfMissing(it)
                 refreshProfileUi()
                 reconnectIfActive()
             }.onFailure { toast(getString(R.string.dash_error, it.message ?: "")) }
         }
+    }
+
+    /** Добавили, например, только ссылку OpenFlux — сразу открываем этот протокол */
+    private fun switchProtocolIfMissing(profile: VpnProfile) {
+        val types = profile.nodes.filter { it.isSupported }.map { it.type }
+        if (types.isEmpty() || protocol in types) return
+        val newProtocol = PROTOCOLS.firstOrNull { it in types } ?: return
+        preferences.edit { putString(PREF_PROTOCOL, newProtocol) }
+        showProtocol(newProtocol)
     }
 
     private fun importFile(uri: Uri) {
@@ -476,6 +486,7 @@ class DashboardActivity : BaseActivity() {
             }
             result.onSuccess {
                 toast(getString(R.string.dash_profile_added, it.name))
+                switchProtocolIfMissing(it)
                 refreshProfileUi()
                 reconnectIfActive()
             }.onFailure { toast(getString(R.string.dash_error, it.message ?: "")) }
@@ -488,6 +499,7 @@ class DashboardActivity : BaseActivity() {
         showProtocol(protocol)
         binding.protocolVless.setOnClickListener { selectProtocol(VpnConfigParser.TYPE_VLESS) }
         binding.protocolHysteria.setOnClickListener { selectProtocol(VpnConfigParser.TYPE_HYSTERIA2) }
+        binding.protocolOpenFlux.setOnClickListener { selectProtocol(VpnConfigParser.TYPE_OPENFLUX) }
         binding.vpnCountryCard.setOnClickListener { showNodesSheet() }
 
         binding.vpnConnectButton.setOnClickListener {
@@ -512,7 +524,14 @@ class DashboardActivity : BaseActivity() {
 
     private fun showProtocol(value: String) {
         binding.protocolVless.isSelected = value == VpnConfigParser.TYPE_VLESS
-        binding.protocolHysteria.isSelected = value != VpnConfigParser.TYPE_VLESS
+        binding.protocolOpenFlux.isSelected = value == VpnConfigParser.TYPE_OPENFLUX
+        binding.protocolHysteria.isSelected = !binding.protocolVless.isSelected && !binding.protocolOpenFlux.isSelected
+    }
+
+    private fun protocolName(value: String) = when (value) {
+        VpnConfigParser.TYPE_VLESS -> "VLESS"
+        VpnConfigParser.TYPE_OPENFLUX -> "OpenFlux"
+        else -> "Hysteria2"
     }
 
     /** Узел, который будет использован для текущего профиля и протокола. */
@@ -559,8 +578,7 @@ class DashboardActivity : BaseActivity() {
             showAddSheet()
             return
         }
-        val protocolName = if (protocol == VpnConfigParser.TYPE_VLESS) "VLESS" else "Hysteria2"
-        val sheet = createListSheet(getString(R.string.dash_nodes_title, protocolName))
+        val sheet = createListSheet(getString(R.string.dash_nodes_title, protocolName(protocol)))
         val nodes = profile.nodes.filter { it.type == protocol }
         val current = resolveNode(profile)
         sheet.setEmpty(if (nodes.isEmpty()) getString(R.string.dash_nodes_empty) else null)
@@ -1080,6 +1098,11 @@ class DashboardActivity : BaseActivity() {
     companion object {
         private const val STATE_TAB = "dashboard_tab"
         private const val PREF_PROTOCOL = "dashboard_protocol"
+        private val PROTOCOLS = listOf(
+            VpnConfigParser.TYPE_HYSTERIA2,
+            VpnConfigParser.TYPE_VLESS,
+            VpnConfigParser.TYPE_OPENFLUX,
+        )
 
         // Переживают пересоздание активности, пока жив процесс (и VPN-сервис)
         private var vpnConnectedAt = 0L

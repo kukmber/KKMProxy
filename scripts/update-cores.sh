@@ -24,6 +24,23 @@ latest_tag() {
   return 1
 }
 
+# Последний релиз, чей тег начинается с <префикс> (у OpenFlux рядом лежат node-v… и nightly-…)
+latest_tag_prefixed() { # <репозиторий> <префикс>
+  local try out
+  for try in 1 2 3; do
+    out=$(curl -fsS -m 25 -H 'User-Agent: KKMProxy' \
+      "https://api.github.com/repos/$1/releases?per_page=30" 2>/dev/null \
+      | python3 -c "
+import json, sys
+for r in json.load(sys.stdin):
+    if not r.get('prerelease') and r.get('tag_name', '').startswith(sys.argv[1]):
+        print(r['tag_name']); break" "$2" 2>/dev/null)
+    [ -n "$out" ] && { printf '%s' "$out"; return 0; }
+    sleep 2
+  done
+  return 1
+}
+
 # Голые цифры версии для сравнения: v0.17.3 -> 0 17 3
 nums() { grep -oE '[0-9]+' <<< "$1" | tr '\n' ' '; }
 
@@ -86,6 +103,20 @@ elif [ "$MIHOMO_NOW" = "$MIHOMO_NEW" ]; then
 else
   sed -i "s|val mihomoVersion = \"$MIHOMO_NOW\"|val mihomoVersion = \"$MIHOMO_NEW\"|" "$GRADLE"
   say "mihomo: $MIHOMO_NOW -> $MIHOMO_NEW ✔"
+  CHANGED=1
+fi
+
+head2 "Ядро OpenFlux"
+OPENFLUX_NOW=$(grep -m1 'val openfluxVersion' "$GRADLE" | cut -d'"' -f2)
+OPENFLUX_NEW=$(latest_tag_prefixed p1neappleXpress/OpenFlux v)
+if [ -z "$OPENFLUX_NEW" ]; then
+  say "OpenFlux: не удалось узнать версию (нет сети?)"
+elif ! newer "$OPENFLUX_NEW" "$OPENFLUX_NOW"; then
+  say "OpenFlux: $OPENFLUX_NOW — уже последняя"
+else
+  sed -i "s|val openfluxVersion = \"$OPENFLUX_NOW\"|val openfluxVersion = \"$OPENFLUX_NEW\"|" "$GRADLE"
+  say "OpenFlux: $OPENFLUX_NOW -> $OPENFLUX_NEW ✔"
+  say "   узлы на серверах обновляются сами (node-v…), но проверьте подключение"
   CHANGED=1
 fi
 

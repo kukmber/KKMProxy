@@ -13,6 +13,8 @@ object MihomoApi {
     private val TEST_URLS = listOf(
         "https://www.gstatic.com/generate_204",
         "https://cp.cloudflare.com/generate_204",
+        // По IP: узлы OpenFlux не умеют резолвить имена на телефоне
+        "http://1.1.1.1/cdn-cgi/trace",
     )
 
     private val client = OkHttpClient.Builder()

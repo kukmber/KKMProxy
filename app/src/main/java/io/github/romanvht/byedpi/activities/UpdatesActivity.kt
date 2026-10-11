@@ -110,7 +110,7 @@ class UpdatesActivity : BaseActivity() {
                 Updates.latestRelease(repo)
             }
             val latest = withContext(Dispatchers.IO) {
-                Updates.components.associate { it.repo to Updates.latestRelease(it.repo)?.tag }
+                Updates.components.associate { it.repo to Updates.latestTag(it) }
             }
             checkButton.isEnabled = true
             renderComponents(latest)
