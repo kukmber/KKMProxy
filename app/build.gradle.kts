@@ -32,7 +32,7 @@ val openfluxAbis = mapOf(
 val openfluxDir = layout.projectDirectory.dir("openflux-bin/$openfluxVersion")
 
 // Для нового релиза достаточно поменять эту строку и поставить тег такой же версии
-val appVersionName = "1.0.3"
+val appVersionName = "1.0.4"
 
 // Номер сборки считается из версии: 1.0.1 -> 10001. Он должен только расти,
 // иначе Android не даст поставить обновление поверх установленного.
