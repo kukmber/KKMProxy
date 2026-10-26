@@ -11,7 +11,7 @@ val abis = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
 // Ядро VPN — mihomo (как в FlClashX). Бинарник кладётся в APK как libmihomo.so
 // и запускается отдельным процессом из nativeLibraryDir.
-val mihomoVersion = "v1.19.31"
+val mihomoVersion = "v1.19.33"
 val mihomoAbis = mapOf(
     "arm64-v8a" to "arm64-v8",
     "armeabi-v7a" to "armv7",
@@ -24,7 +24,7 @@ val mihomoDir = layout.projectDirectory.dir("mihomo-bin/$mihomoVersion")
 // build_android.sh автора: только такой бинарник резолвит имена на Android
 // (нужно транспортам через документы). Кладётся в APK как libopenflux.so.
 // Версия должна совпадать с тегом подмодуля — update-cores.sh меняет обе.
-val openfluxVersion = "v0.5.1"
+val openfluxVersion = "v0.13.0"
 val openfluxSrc = layout.projectDirectory.dir("src/main/openflux")
 // ABI -> GOARCH и префикс компилятора NDK
 val openfluxAbis = mapOf(
